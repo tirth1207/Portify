@@ -9,6 +9,10 @@ import ModernTemplate from "@/components/templates/ModernTemplate"
 import CreativeTemplate from "@/components/templates/CreativeTemplate"
 import ProfessionalTemplate from "@/components/templates/ProfessionalTemplate"
 import DeployButton from "@/components/DeployButton"
+import MinimalTemplate from "@/components/templates/MinimalTemplate"
+import TechTemplate from "@/components/templates/TechTemplate"
+import ArtisticTemplate from "@/components/templates/ArtisticTemplate"
+import ExecutiveTemplate from "@/components/templates/ExecutiveTemplate"
 
 export default function PortfolioPage() {
   const [resume, setResume] = useState<any>(null)
@@ -43,12 +47,20 @@ export default function PortfolioPage() {
     const props = { data: resume, editMode, onSave: handleSave }
 
     switch (template) {
+      case "minimal":
+        return <MinimalTemplate {...props} />
       case "modern":
         return <ModernTemplate {...props} />
       case "creative":
         return <CreativeTemplate {...props} />
       case "professional":
         return <ProfessionalTemplate {...props} />
+      case "tech":
+        return <TechTemplate {...props} />
+      case "artistic":
+        return <ArtisticTemplate {...props} />
+      case "executive":
+        return <ExecutiveTemplate {...props} />
       default:
         return <PortfolioTemplate {...props} />
     }

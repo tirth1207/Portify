@@ -41,6 +41,30 @@ const templates = [
     style: "professional",
     accent: "green",
   },
+  {
+    id: "tech",
+    name: "Tech",
+    description: "Terminal-inspired design for developers and engineers",
+    features: ["Code Aesthetic", "Terminal Style", "Developer Focused"],
+    style: "tech",
+    accent: "green",
+  },
+  {
+    id: "artistic",
+    name: "Artistic",
+    description: "Vibrant and expressive design for creative professionals",
+    features: ["Vibrant Colors", "Artistic Elements", "Creative Layouts"],
+    style: "artistic",
+    accent: "rainbow",
+  },
+  {
+    id: "executive",
+    name: "Executive",
+    description: "Sophisticated design for senior leadership roles",
+    features: ["Executive Style", "Leadership Focus", "Professional Impact"],
+    style: "executive",
+    accent: "slate",
+  },
 ]
 
 const TemplatePreview = ({ template, isSelected }: { template: any; isSelected: boolean }) => {
@@ -64,6 +88,67 @@ const TemplatePreview = ({ template, isSelected }: { template: any; isSelected: 
             <div className="flex gap-1 mt-3">
               <div className="w-8 h-4 bg-slate-100 dark:bg-slate-800 rounded-sm"></div>
               <div className="w-6 h-4 bg-slate-100 dark:bg-slate-800 rounded-sm"></div>
+            </div>
+          </div>
+        )
+      case "tech":
+        return (
+          <div className="w-full h-full bg-slate-900 text-green-400 p-4 font-mono text-xs">
+            <div className="flex items-center gap-1 mb-2">
+              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-green-500">$ whoami</div>
+              <div className="text-green-300">john_developer</div>
+              <div className="text-green-500">$ cat skills.json</div>
+              <div className="text-green-300">{"{"}</div>
+              <div className="text-green-300 ml-2">"languages": ["JS", "Python"]</div>
+              <div className="text-green-300">{"}"}</div>
+            </div>
+          </div>
+        )
+      case "artistic":
+        return (
+          <div className="w-full h-full bg-gradient-to-br from-pink-100 via-purple-50 to-orange-100 dark:from-pink-900 dark:via-purple-900 dark:to-orange-900 p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-500"></div>
+              <div className="space-y-1">
+                <div className="w-16 h-2 bg-gradient-to-r from-pink-300 to-purple-400 rounded"></div>
+                <div className="w-12 h-1.5 bg-purple-200 dark:bg-purple-800 rounded"></div>
+              </div>
+            </div>
+            <div className="space-y-2 flex-1">
+              <div className="w-full h-1.5 bg-purple-200 dark:bg-purple-800 rounded"></div>
+              <div className="w-3/4 h-1.5 bg-pink-200 dark:bg-pink-800 rounded"></div>
+              <div className="w-1/2 h-1.5 bg-orange-200 dark:bg-orange-800 rounded"></div>
+            </div>
+            <div className="flex gap-1 mt-3">
+              <div className="w-8 h-4 bg-gradient-to-r from-pink-400 to-purple-500 rounded-sm"></div>
+              <div className="w-6 h-4 bg-gradient-to-r from-purple-400 to-orange-500 rounded-sm"></div>
+            </div>
+          </div>
+        )
+      case "executive":
+        return (
+          <div className="w-full h-full bg-slate-50 dark:bg-slate-800 p-4">
+            <div className="bg-slate-800 text-white p-2 rounded mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-slate-600"></div>
+                <div className="space-y-1">
+                  <div className="w-12 h-1.5 bg-slate-300 rounded"></div>
+                  <div className="w-8 h-1 bg-slate-400 rounded"></div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded"></div>
+              <div className="w-3/4 h-1.5 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            </div>
+            <div className="flex justify-between mt-3">
+              <div className="w-6 h-3 bg-slate-300 dark:bg-slate-600 rounded"></div>
+              <div className="w-4 h-3 bg-slate-800 rounded"></div>
             </div>
           </div>
         )

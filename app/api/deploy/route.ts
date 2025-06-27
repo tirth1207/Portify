@@ -1,47 +1,59 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
-// Simulate deployment to subdomain
+const VERCEL_API = "https://api.vercel.com";
+const TOKEN = process.env.VERCEL_API_TOKEN!;
+const PROJECT_ID = process.env.VERCEL_PROJECT_ID!;
+const TEAM_ID = process.env.VERCEL_TEAM_ID; // optional
+
+function genSubdomain(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .substring(0, 30);
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { portfolioData, selectedTemplate, userInfo } = await req.json()
+    const { portfolioData, selectedTemplate, userInfo } = await req.json();
+    const sub = genSubdomain(portfolioData.name);
 
-    // Generate subdomain from user's name
-    const generateSubdomain = (name: string) => {
-      return name
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-        .substring(0, 30) // Limit length
-    }
+    // 1. Add domain via Vercel API
+    const domainName = `${sub}.portfoliobuilder.app`;
+    await axios.post(
+      `${VERCEL_API}/v9/projects/${PROJECT_ID}/domains${TEAM_ID ? `?teamId=${TEAM_ID}` : ""}`,
+      { name: domainName },
+      {
+        headers: { Authorization: `Bearer ${TOKEN}` },
+      }
+    );
 
-    const subdomain = generateSubdomain(portfolioData.name)
-    const deploymentUrl = `https://${subdomain}.portfoliobuilder.app`
+    // 2. [DNS already set via wildcard CNAME in your dashboard!]
 
-    // Simulate deployment process
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    // 3. Optionally trigger a redeploy to apply domain
+    await axios.post(
+      `${VERCEL_API}/v13/deployments?projectId=${PROJECT_ID}${TEAM_ID ? `&teamId=${TEAM_ID}` : ""}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${TOKEN}` },
+      }
+    );
 
-    // In a real implementation, you would:
-    // 1. Create DNS records for the subdomain
-    // 2. Deploy the portfolio to a hosting service
-    // 3. Set up SSL certificates
-    // 4. Store deployment info in database
-
-    const deploymentResult = {
+    return NextResponse.json({
       success: true,
-      url: deploymentUrl,
-      subdomain,
+      url: `https://${domainName}`,
+      subdomain: sub,
+      status: "live",
       deployedAt: new Date().toISOString(),
       template: selectedTemplate,
-      status: "live"
-    }
-
-    return NextResponse.json(deploymentResult)
-  } catch (error) {
-    console.error("Deployment failed:", error)
+    });
+  } catch (error: any) {
+    console.error("Subdomain deploy failed:", error.response?.data || error.message);
     return NextResponse.json(
-      { error: "Deployment failed. Please try again." },
+      { error: "Subdomain deploy failed", details: error.response?.data || error.message },
       { status: 500 }
-    )
+    );
   }
 }
