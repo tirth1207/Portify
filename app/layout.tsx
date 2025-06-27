@@ -1,75 +1,65 @@
-import Navbar from "@/components/navbar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-// import { DATA } from "@/data/resume";
-import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google";
-// import { Analytics } from "@vercel/analytics/next"
-import "./globals.css";
+import type React from "react"
+import { ThemeProvider } from "@/components/theme-provider"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
+import type { Metadata } from "next"
+import { Mona_Sans as FontSans } from "next/font/google"
+import "./globals.css"
 
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
-});
+})
 
-// export const metadata: Metadata = {
-//   metadataBase: new URL(DATA.url),
-//   title: {
-//     default: DATA.name,
-//     template: `%s | ${DATA.name}`,
-//   },
-//   description: DATA.description,
-//   openGraph: {
-//     title: `${DATA.name}`,
-//     description: DATA.description,
-//     url: DATA.url,
-//     siteName: `${DATA.name}`,
-//     locale: "en_US",
-//     type: "website",
-//   },
-//   robots: {
-//     index: true,
-//     follow: true,
-//     googleBot: {
-//       index: true,
-//       follow: true,
-//       "max-video-preview": -1,
-//       "max-image-preview": "large",
-//       "max-snippet": -1,
-//     },
-//   },
-//   twitter: {
-//     title: `${DATA.name}`,
-//     card: "summary_large_image",
-//   },
-//   verification: {
-//     google: "",
-//     yandex: "",
-//   },
-// };
+export const metadata: Metadata = {
+  title: {
+    default: "Portfolio Builder - Create Your Professional Portfolio in Minutes",
+    template: "%s | Portfolio Builder",
+  },
+  description:
+    "Transform your resume into a stunning portfolio website with AI. Upload your PDF, choose a template, and launch your professional presence.",
+  keywords: ["portfolio", "resume", "AI", "website builder", "professional", "templates"],
+  authors: [{ name: "Portfolio Builder" }],
+  creator: "Portfolio Builder",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    title: "Portfolio Builder - Create Your Professional Portfolio in Minutes",
+    description:
+      "Transform your resume into a stunning portfolio website with AI. Upload your PDF, choose a template, and launch your professional presence.",
+    siteName: "Portfolio Builder",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Portfolio Builder - Create Your Professional Portfolio in Minutes",
+    description:
+      "Transform your resume into a stunning portfolio website with AI. Upload your PDF, choose a template, and launch your professional presence.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased max-w-2xl mx-auto py-12 sm:py-24 px-6",
-          fontSans.variable
-        )}
-      >
+      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <ThemeProvider attribute="class" defaultTheme="light">
-          <TooltipProvider delayDuration={0}>
-            {children}
-            {/* <Analytics /> */}
-            <Navbar />
-          </TooltipProvider>
+          <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }
