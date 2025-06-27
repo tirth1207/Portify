@@ -1,8 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import pdfParse from "pdf-parse";
 
+// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY ?? "");
+
+// Retry wrapper for overloaded model errors
+async function retryGenerateContent(
+  model: ReturnType<GoogleGenerativeAI["getGenerativeModel"]>,
+  payload: any,
+  retries = 3,
+  delay = 2000
+) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await model.generateContent(payload);
+    } catch (err: any) {
+      const msg = err?.message ?? "";
+      if (msg.includes("503") || msg.includes("overloaded")) {
+        console.warn(`Gemini overloaded — attempt ${attempt + 1}, retrying in ${delay}ms...`);
+        await new Promise((res) => setTimeout(res, delay));
+        delay *= 2; // exponential backoff
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error("Gemini model is overloaded. Please try again later.");
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,18 +38,14 @@ export async function POST(req: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer); // ✅ works in Node.js runtime
+    const base64Data = Buffer.from(arrayBuffer).toString("base64");
 
-    const data = await pdfParse(buffer);
-    const resumeText = data.text;
-
-    if (!resumeText || resumeText.trim().length < 50) {
-      return NextResponse.json({ error: "Resume text too short to parse." }, { status: 400 });
-    }
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
-You are an expert resume parser. Extract structured information from the resume text below.
-Return a JSON in the following format:
+You are an expert resume parser.
+
+Extract structured information from the uploaded PDF resume and return only a clean JSON in the following format:
 
 {
   "name": "Full Name",
@@ -55,30 +75,35 @@ Return a JSON in the following format:
     }
   ]
 }
-
-Resume Text:
-"""
-${resumeText}
-"""
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // or 2.5 if you’ve upgraded
-    const result = await model.generateContent(prompt);
-    const content = result.response.text();
+    const result = await retryGenerateContent(model, [
+      {
+        inlineData: {
+          mimeType: "application/pdf",
+          data: base64Data,
+        },
+      },
+      { text: prompt },
+    ]);
 
-    // Safe parse
-    const jsonStart = content.indexOf("{");
-    if (jsonStart === -1) throw new Error("Gemini response is malformed");
+    const raw = result.response.text();
 
-    const json = content.slice(jsonStart).replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(json);
+    const jsonStart = raw.indexOf("{");
+    if (jsonStart === -1) throw new Error("Malformed Gemini response — no JSON found.");
+
+    const cleaned = raw.slice(jsonStart).replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(cleaned);
 
     return NextResponse.json(parsed);
   } catch (err: any) {
     console.error("Resume parsing failed:", err.message);
-    return NextResponse.json({
-      error: "Resume parsing failed.",
-      details: err.message ?? err.toString(),
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Resume parsing failed.",
+        details: err.message ?? err.toString(),
+      },
+      { status: 500 }
+    );
   }
 }
