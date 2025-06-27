@@ -121,7 +121,7 @@ export default function ProfessionalTemplate({ data, editMode = false, onSave }:
                             ))}
                           </div>
                         )}
-                        {index < data.projects.length - 1 && <Separator className="mt-6" />}
+                        {data.projects && index < data.projects.length - 1 && <Separator className="mt-6" />}
                       </div>
                     ))}
                   </CardContent>

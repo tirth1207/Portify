@@ -68,7 +68,7 @@ export default function PortfolioTemplate({ data }: { data: Resume }) {
         </section>
       )}
 
-      {data.skills?.length > 0 && (
+      {Array.isArray(data.skills) && data.skills.length > 0 && (
         <section className="mb-8">
           <h3 className="text-2xl font-semibold mb-4">Skills</h3>
           <div className="flex flex-wrap gap-2">
@@ -81,14 +81,14 @@ export default function PortfolioTemplate({ data }: { data: Resume }) {
         </section>
       )}
 
-      {data.projects?.length > 0 && (
+      {Array.isArray(data.projects) && data.projects.length > 0 && (
         <section className="mb-8">
           <h3 className="text-2xl font-semibold mb-4">Projects</h3>
           {data.projects.map((project, i) => (
             <div key={i} className="mb-4">
               <p className="font-semibold">{project.name}</p>
               <p className="text-sm text-gray-600">{project.description}</p>
-              {project.techStack?.length > 0 && (
+              {Array.isArray(project.techStack) && project.techStack.length > 0 && (
                 <div className="mt-1 flex flex-wrap gap-2">
                   {project.techStack.map((tech, j) => (
                     <span key={j} className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">

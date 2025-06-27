@@ -25,6 +25,7 @@ const DATA = {
       description: "An accessible app for children with learning disabilities",
       technologies: ["React", "Tailwind", "Node.js"],
       href: "#",
+      dates: "June 2025"
     },
   ],
   avatarUrl: "/avatar.png", // placeholder
@@ -219,6 +220,7 @@ export default function Page(data: any) {
                   href={project.href}
                   title={project.title}
                   description={project.description}
+                  dates={project.dates}
                   tags={project.technologies}
                 />
               </BlurFade>
