@@ -22,32 +22,35 @@ export default function SharedPortfolioPage() {
     const portfolioId = params.id as string
 
     if (portfolioId) {
-      try {
-        // In a real app, you'd fetch from your database
-        // For now, we'll get from localStorage
-        const storedData = localStorage.getItem(`shared_portfolio_${portfolioId}`)
-
-        if (storedData) {
-          const parsed = JSON.parse(storedData)
-          setPortfolioData(parsed.data)
-          setTemplate(parsed.template)
-        } else {
-          setError(true)
-        }
-      } catch (err) {
-        setError(true)
-      } finally {
-        setLoading(false)
-      }
+      fetchPortfolioData(portfolioId)
     }
   }, [params.id])
 
+  const fetchPortfolioData = async (portfolioId: string) => {
+    try {
+      const response = await fetch(`/api/share?id=${portfolioId}`)
+      const result = await response.json()
+
+      if (result.success && result.data) {
+        setPortfolioData(result.data.data)
+        setTemplate(result.data.template)
+      } else {
+        setError(true)
+      }
+    } catch (err) {
+      console.error("Error fetching portfolio:", err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Loading portfolio...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading portfolio...</p>
         </div>
       </div>
     )
@@ -55,15 +58,27 @@ export default function SharedPortfolioPage() {
 
   if (error || !portfolioData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Portfolio Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            The portfolio you're looking for doesn't exist or has been removed.
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="mb-8">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Portfolio Not Found</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              The portfolio you're looking for doesn't exist, has expired, or the link may be incorrect.
+            </p>
+          </div>
           <a
             href="/"
-            className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-black hover:bg-gray-800 text-white rounded-lg transition-colors font-medium"
           >
             Create Your Own Portfolio
           </a>
@@ -105,9 +120,17 @@ export default function SharedPortfolioPage() {
       <div className="fixed bottom-4 right-4 z-50">
         <a
           href="/"
-          className="inline-flex items-center px-3 py-2 bg-black/80 text-white text-xs rounded-full hover:bg-black transition-colors backdrop-blur-sm"
+          className="inline-flex items-center px-3 py-2 bg-black/80 hover:bg-black text-white text-xs rounded-full transition-colors backdrop-blur-sm shadow-lg"
         >
-          Create your own portfolio
+          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+            <path
+              fillRule="evenodd"
+              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Create your own
         </a>
       </div>
     </div>

@@ -28,6 +28,7 @@ export default function PortfolioPage() {
   const [template, setTemplate] = useState("minimal")
   const [shareUrl, setShareUrl] = useState("")
   const [isSharing, setIsSharing] = useState(false)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -45,31 +46,30 @@ export default function PortfolioPage() {
   const generateShareLink = async () => {
     setIsSharing(true)
     try {
-      // Generate a unique ID for this portfolio
-      const portfolioId = Math.random().toString(36).substr(2, 9)
-
-      // Store the portfolio data with the unique ID
-      const portfolioData = {
-        id: portfolioId,
-        data: resume,
-        template: template,
-        createdAt: new Date().toISOString(),
-      }
-
-      // In a real app, you'd save this to a database
-      // For now, we'll use localStorage with a special key
-      localStorage.setItem(`shared_portfolio_${portfolioId}`, JSON.stringify(portfolioData))
-
-      // Generate the share URL
-      const baseUrl = window.location.origin
-      const shareUrl = `${baseUrl}/share/${portfolioId}`
-      setShareUrl(shareUrl)
-
-      toast({
-        title: "Share link generated!",
-        description: "Your portfolio is now ready to share.",
+      const response = await fetch("/api/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          portfolioData: resume,
+          template: template,
+        }),
       })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setShareUrl(result.shareUrl)
+        toast({
+          title: "Share link generated! 🚀",
+          description: "Your portfolio is now ready to share with anyone.",
+        })
+      } else {
+        throw new Error(result.error || "Failed to generate share link")
+      }
     } catch (error) {
+      console.error("Error generating share link:", error)
       toast({
         title: "Error generating share link",
         description: "Please try again.",
@@ -83,7 +83,7 @@ export default function PortfolioPage() {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl)
     toast({
-      title: "Copied!",
+      title: "Copied! 📋",
       description: "Share link copied to clipboard",
     })
   }
@@ -138,9 +138,9 @@ export default function PortfolioPage() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <Dialog>
+          <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" onClick={generateShareLink}>
+              <Button variant="outline" size="sm">
                 <Share className="h-4 w-4 mr-2" />
                 Share
               </Button>
@@ -148,7 +148,9 @@ export default function PortfolioPage() {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Share Your Portfolio</DialogTitle>
-                <DialogDescription>Generate a unique link to share your portfolio with others.</DialogDescription>
+                <DialogDescription>
+                  Generate a unique link to share your portfolio with anyone, anywhere.
+                </DialogDescription>
               </DialogHeader>
 
               {shareUrl ? (
@@ -156,7 +158,9 @@ export default function PortfolioPage() {
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                     <p className="text-sm font-medium mb-2">Your portfolio link:</p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 text-sm bg-white dark:bg-gray-900 p-2 rounded border">{shareUrl}</code>
+                      <code className="flex-1 text-sm bg-white dark:bg-gray-900 p-2 rounded border break-all">
+                        {shareUrl}
+                      </code>
                       <Button size="sm" variant="outline" onClick={copyToClipboard}>
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -174,13 +178,22 @@ export default function PortfolioPage() {
                     </Button>
                   </div>
 
-                  <p className="text-xs text-gray-500 text-center">
-                    This link will show your portfolio without any editing controls.
-                  </p>
+                  <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-3">
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      ✨ This link works anywhere! Share it via email, social media, or messaging apps. Anyone with the
+                      link can view your portfolio.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Button onClick={generateShareLink} disabled={isSharing}>
+                  <div className="mb-4">
+                    <Share className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Create a shareable link that works on any device
+                    </p>
+                  </div>
+                  <Button onClick={generateShareLink} disabled={isSharing} className="w-full">
                     {isSharing ? "Generating..." : "Generate Share Link"}
                   </Button>
                 </div>

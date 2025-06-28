@@ -1,34 +1,37 @@
+// Example of how to implement this with a real database (Supabase/PostgreSQL)
+import { createClient } from "@supabase/supabase-js"
 import { type NextRequest, NextResponse } from "next/server"
 
-// In-memory storage for demo purposes
-// In production, you'd use a database like PostgreSQL, MongoDB, etc.
-const portfolioStorage = new Map<string, any>()
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use service role for server-side operations
+)
 
-// API route to handle portfolio sharing
 export async function POST(req: NextRequest) {
   try {
     const { portfolioData, template } = await req.json()
 
-    // Generate a unique ID
     const portfolioId = Math.random().toString(36).substr(2, 9) + Date.now().toString(36)
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
 
-    // Store the portfolio data
-    const shareData = {
-      id: portfolioId,
-      data: portfolioData,
-      template: template,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-    }
+    const { data, error } = await supabase
+      .from("shared_portfolios")
+      .insert({
+        id: portfolioId,
+        portfolio_data: portfolioData,
+        template: template,
+        expires_at: expiresAt.toISOString(),
+      })
+      .select()
+      .single()
 
-    // Save to in-memory storage (in production, save to database)
-    portfolioStorage.set(portfolioId, shareData)
+    if (error) throw error
 
     return NextResponse.json({
       success: true,
       shareId: portfolioId,
       shareUrl: `${req.nextUrl.origin}/share/${portfolioId}`,
-      data: shareData,
+      data: data,
     })
   } catch (error) {
     console.error("Error creating share link:", error)
@@ -36,7 +39,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// API route to get shared portfolio data
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -46,22 +48,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Portfolio ID required" }, { status: 400 })
     }
 
-    // Get from in-memory storage (in production, fetch from database)
-    const portfolioData = portfolioStorage.get(portfolioId)
+    const { data, error } = await supabase
+      .from("shared_portfolios")
+      .select("*")
+      .eq("id", portfolioId)
+      .gt("expires_at", new Date().toISOString())
+      .single()
 
-    if (!portfolioData) {
+    if (error || !data) {
       return NextResponse.json({ error: "Portfolio not found" }, { status: 404 })
     }
 
-    // Check if expired
-    if (new Date() > new Date(portfolioData.expiresAt)) {
-      portfolioStorage.delete(portfolioId)
-      return NextResponse.json({ error: "Portfolio has expired" }, { status: 404 })
-    }
+    // Update view count
+    await supabase
+      .from("shared_portfolios")
+      .update({
+        view_count: (data.view_count || 0) + 1,
+        last_viewed_at: new Date().toISOString(),
+      })
+      .eq("id", portfolioId)
 
     return NextResponse.json({
       success: true,
-      data: portfolioData,
+      data: data,
     })
   } catch (error) {
     console.error("Error fetching shared portfolio:", error)
