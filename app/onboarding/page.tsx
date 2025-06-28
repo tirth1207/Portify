@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Check, ArrowRight } from "lucide-react"
 import BlurFade from "@/components/magicui/blur-fade"
+import ProBadge from "@/components/ProBadge"
 
 const templates = [
   {
@@ -16,6 +17,7 @@ const templates = [
     features: ["Clean Typography", "Minimal Design", "Fast Loading"],
     style: "minimal",
     accent: "slate",
+    isPro: false,
   },
   {
     id: "modern",
@@ -24,6 +26,7 @@ const templates = [
     features: ["Gradient Backgrounds", "Smooth Animations", "Interactive Elements"],
     style: "modern",
     accent: "blue",
+    isPro: false,
   },
   {
     id: "creative",
@@ -32,6 +35,7 @@ const templates = [
     features: ["Bold Colors", "Artistic Layout", "Creative Elements"],
     style: "creative",
     accent: "purple",
+    isPro: true,
   },
   {
     id: "professional",
@@ -40,6 +44,7 @@ const templates = [
     features: ["Corporate Style", "Professional Layout", "Business Colors"],
     style: "professional",
     accent: "green",
+    isPro: false,
   },
   {
     id: "tech",
@@ -48,6 +53,7 @@ const templates = [
     features: ["Code Aesthetic", "Terminal Style", "Developer Focused"],
     style: "tech",
     accent: "green",
+    isPro: true,
   },
   {
     id: "artistic",
@@ -56,6 +62,7 @@ const templates = [
     features: ["Vibrant Colors", "Artistic Elements", "Creative Layouts"],
     style: "artistic",
     accent: "rainbow",
+    isPro: true,
   },
   {
     id: "executive",
@@ -64,6 +71,7 @@ const templates = [
     features: ["Executive Style", "Leadership Focus", "Professional Impact"],
     style: "executive",
     accent: "slate",
+    isPro: true,
   },
 ]
 
@@ -298,7 +306,10 @@ export default function OnboardingPage() {
                     {/* Template Info */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{template.name}</h3>
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          {template.name}
+                          {template.isPro && <ProBadge />}
+                        </h3>
                         <div
                           className={`transition-all duration-300 ${
                             hoveredTemplate === template.id || selectedTemplate === template.id

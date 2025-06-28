@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import ProFeatureGate from "@/components/ProFeatureGate"
 
 export default function PortfolioPage() {
   const [resume, setResume] = useState<any>(null)
@@ -201,7 +202,9 @@ export default function PortfolioPage() {
             </DialogContent>
           </Dialog>
 
-          <DeployButton portfolioData={resume} selectedTemplate={template} />
+          <ProFeatureGate feature="deploy">
+            <DeployButton portfolioData={resume} selectedTemplate={template} />
+          </ProFeatureGate>
         </div>
       </div>
 
