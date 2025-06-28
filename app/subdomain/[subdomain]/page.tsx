@@ -1,8 +1,8 @@
 export default function SubdomainPage({ params }: { params: { subdomain: string } }) {
   return (
-    <div>
-      <h1>Subdomain: {params.subdomain}</h1>
-      <p>This is the portfolio for {params.subdomain}</p>
-    </div>
+    <main style={{ padding: "2rem" }}>
+      <h1>Hello from subdomain</h1>
+      <p>Subdomain: <strong>{params.subdomain}</strong></p>
+    </main>
   );
 }
