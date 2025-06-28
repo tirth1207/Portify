@@ -21,11 +21,11 @@ const supabase = createClient(
 // }
 
 type PageProps = {
-  params: { subdomain: string }
+  params: Promise<{ subdomain: string }>
 }
 
 export default async function SubdomainPage({ params }: PageProps) {
-  const { subdomain } = params;
+  const { subdomain } = await params;
 
   // Debug: Log environment variables and subdomain
   console.log('[DEBUG] SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
