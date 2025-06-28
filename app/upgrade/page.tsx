@@ -40,7 +40,7 @@ export default function UpgradePage() {
   }
 
   const handleUpiDeepLink = () => {
-    const upiId = "tirth@upi"
+    const upiId = "rathod2304hetal@okaxis"
     const amount = "299" // Example amount
     const note = "Portify Pro Upgrade"
 
@@ -108,7 +108,7 @@ export default function UpgradePage() {
 
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
               Scan the QR or pay directly to UPI ID:{" "}
-              <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">tirth@upi</span>
+              <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">rathod2304hetal@okaxis</span>
             </p>
 
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -135,7 +135,7 @@ export default function UpgradePage() {
                   <div className="text-center">
                     <QrCode className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">QR Code</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">₹299 to tirth@upi</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">₹299 to rathod2304hetal@okaxis</p>
                   </div>
                 </div>
 

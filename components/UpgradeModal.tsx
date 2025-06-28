@@ -53,7 +53,7 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
   }
 
   const handleUpiDeepLink = () => {
-    const upiId = "tirth@upi"
+    const upiId = "rathod2304hetal@okaxis"
     const amount = "299"
     const note = "Portify Pro Upgrade"
 
@@ -207,7 +207,7 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
                 <div>
                   <DialogTitle className="text-xl">Complete Your Upgrade</DialogTitle>
                   <DialogDescription>
-                    Scan QR or pay to UPI ID: <span className="font-mono font-semibold">tirth@upi</span>
+                    Scan QR or pay to UPI ID: <span className="font-mono font-semibold">rathod2304hetal@okaxis</span>
                   </DialogDescription>
                 </div>
               </div>
@@ -228,7 +228,7 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
                       <div className="text-center">
                         <QrCode className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                         <p className="text-xs text-gray-500">QR Code</p>
-                        <p className="text-xs text-gray-400">₹299 to tirth@upi</p>
+                        <p className="text-xs text-gray-400">₹299 to rathod2304hetal@okaxis</p>
                       </div>
                     </div>
                     <Button
