@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
 
   const isProduction = process.env.NODE_ENV === "production"
   const baseDomain = isProduction ? "portify.co.in" : "localhost:3000"
-  
+
   const isMainApp =
     host === baseDomain ||
     host === `www.${baseDomain}` ||
@@ -17,10 +17,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Rewrite subdomain to /_sub/[subdomain] route
+  // 👇 Update this rewrite path
   const url = request.nextUrl.clone()
-  url.pathname = `/_sub/${subdomain}${url.pathname}`
-  console.log("[Middleware] Host:", host, "→ Rewriting to:", url.pathname);
+  url.pathname = `/subdomain/${subdomain}${url.pathname}`
   return NextResponse.rewrite(url)
 }
 
