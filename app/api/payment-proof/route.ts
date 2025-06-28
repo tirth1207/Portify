@@ -9,21 +9,61 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, transactionId } = await req.json()
+    const { name, email, transactionId, plan, amount } = await req.json()
+
+    // Validate required fields
+    if (!name || !email || !transactionId) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      )
+    }
+
+    // Get user from auth header or session
+    const authHeader = req.headers.get('authorization')
+    let userId = null
+
+    if (authHeader) {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+        if (user && !error) {
+          userId = user.id
+        }
+      } catch (error) {
+        console.log("Auth header parsing failed, continuing without user ID")
+      }
+    }
 
     const { error } = await supabase.from("payment_proofs").insert([
       {
         name,
         email,
         transaction_id: transactionId,
+        user_id: userId,
+        plan: plan || "Pro", // Default to Pro for backward compatibility
+        amount: amount || 299, // Default amount for backward compatibility
+        status: "pending",
+        created_at: new Date().toISOString(),
       },
     ])
 
-    if (error) throw error
+    if (error) {
+      console.error("Database error:", error)
+      throw error
+    }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ 
+      success: true,
+      message: "Payment proof submitted successfully"
+    })
   } catch (err: any) {
     console.error("❌ Payment proof error:", err.message || err)
-    return NextResponse.json({ success: false, error: err.message || "Something went wrong" }, { status: 500 })
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: err.message || "Something went wrong" 
+      }, 
+      { status: 500 }
+    )
   }
 }

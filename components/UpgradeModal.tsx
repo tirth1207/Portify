@@ -131,7 +131,7 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-5xl w-full max-h-[90vh] overflow-y-auto p-0">
         {step === "features" && (
           <>
             <DialogHeader className="p-6 pb-4">
@@ -149,9 +149,9 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
                     </DialogDescription>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleClose}>
+                {/* <Button variant="ghost" size="sm" onClick={handleClose}>
                   <X className="h-4 w-4" />
-                </Button>
+                </Button> */}
               </div>
             </DialogHeader>
 

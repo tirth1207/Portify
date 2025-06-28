@@ -2,8 +2,6 @@
 
 import { QRCodeCanvas } from "qrcode.react"
 
-
-
 type Props = {
   upiId: string
   name?: string
@@ -11,15 +9,28 @@ type Props = {
   note?: string
 }
 // `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`
-export default function UpiQRCode({ upiId, name = "Tirth", amount = 99, note = "Portify Pro" }: Props) {
+export default function UpiQRCode({ upiId, name = "Portify", amount = 299, note = "Portify Pro Upgrade" }: Props) {
   const upiUrl = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`
 
   return (
-    <div className="flex w-full items-center gap-4 p-5">
-      <QRCodeCanvas value={upiUrl} size={150} />
-      {/* <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-        Scan to pay ₹{amount} to <strong>{upiId}</strong>
-      </p> */}
+    <div className="flex flex-col items-center justify-center w-full h-full gap-3">
+      <div className="p-2 bg-white rounded-lg shadow-sm">
+        <QRCodeCanvas 
+          value={upiUrl} 
+          size={140} 
+          level="M"
+          includeMargin={true}
+          style={{ borderRadius: '8px' }}
+        />
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          ₹{amount}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+          {upiId}
+        </p>
+      </div>
     </div>
   )
 }
