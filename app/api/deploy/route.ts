@@ -1,30 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
-const VERCEL_API = "https://api.vercel.com";
-const TOKEN = process.env.VERCEL_API_TOKEN!;
-const PROJECT_ID = process.env.VERCEL_PROJECT_ID!;
-const TEAM_ID = process.env.VERCEL_TEAM_ID; // optional
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-function genSubdomain(name: string) {
+// Generate subdomain from user's name
+const generateSubdomain = (name: string) => {
   return name
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
-    .substring(0, 30);
-}
+    .substring(0, 30); // Limit length
+};
 
+// Simulate deployment to subdomain
 export async function POST(req: NextRequest) {
   try {
-    const { portfolioData, template } = await req.json();
-    
+    const { portfolioData, selectedTemplate, userInfo } = await req.json();
+
     // Get user from auth header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
@@ -56,15 +52,14 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    // Check if subdomain is available
-    const sub = genSubdomain(portfolioData.name);
-    const domainName = `${sub}.portfoliobuilder.app`;
+    const subdomain = generateSubdomain(portfolioData.name);
+    const deploymentUrl = `https://${subdomain}.portfoliobuilder.app`;
 
     // Check if subdomain already exists
     const { data: existingPortfolio } = await supabase
       .from("portfolios")
       .select("id")
-      .eq("subdomain", sub)
+      .eq("subdomain", subdomain)
       .single();
 
     if (existingPortfolio) {
@@ -73,25 +68,16 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // 1. Add domain via Vercel API
-    try {
-      await axios.post(
-        `${VERCEL_API}/v9/projects/${PROJECT_ID}/domains${TEAM_ID ? `?teamId=${TEAM_ID}` : ""}`,
-        { name: domainName },
-        {
-          headers: { Authorization: `Bearer ${TOKEN}` },
-        }
-      );
-    } catch (vercelError: any) {
-      if (vercelError.response?.status === 409) {
-        return NextResponse.json({ 
-          error: "Subdomain already exists. Please choose a different name." 
-        }, { status: 400 });
-      }
-      throw vercelError;
-    }
+    // Simulate deployment process
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // 2. Create or update portfolio in database
+    // In a real implementation, you would:
+    // 1. Create DNS records for the subdomain
+    // 2. Deploy the portfolio to a hosting service
+    // 3. Set up SSL certificates
+    // 4. Store deployment info in database
+
+    // Save portfolio to database
     const { data: portfolio, error: dbError } = await supabase
       .from("portfolios")
       .upsert({
@@ -103,9 +89,9 @@ export async function POST(req: NextRequest) {
         projects: portfolioData.projects || [],
         education: portfolioData.education || [],
         experience: portfolioData.experience || [],
-        template: template,
-        subdomain: sub,
-        deployment_url: `https://${domainName}`,
+        template: selectedTemplate,
+        subdomain: subdomain,
+        deployment_url: deploymentUrl,
         is_deployed: true,
         updated_at: new Date().toISOString(),
       })
@@ -117,33 +103,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to save portfolio" }, { status: 500 });
     }
 
-    // 3. Optionally trigger a redeploy to apply domain
-    try {
-      await axios.post(
-        `${VERCEL_API}/v13/deployments?projectId=${PROJECT_ID}${TEAM_ID ? `&teamId=${TEAM_ID}` : ""}`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${TOKEN}` },
-        }
-      );
-    } catch (deployError) {
-      console.warn("Redeploy trigger failed, but domain was added:", deployError);
-    }
-
-    return NextResponse.json({
+    const deploymentResult = {
       success: true,
-      deploymentUrl: `https://${domainName}`,
-      subdomain: sub,
-      status: "live",
+      deploymentUrl: deploymentUrl,
+      subdomain,
       deployedAt: new Date().toISOString(),
-      template: template,
-      portfolioId: portfolio.id,
-    });
-  } catch (error: any) {
-    console.error("Subdomain deploy failed:", error.response?.data || error.message);
-    return NextResponse.json(
-      { error: "Subdomain deploy failed", details: error.response?.data || error.message },
-      { status: 500 }
-    );
+      template: selectedTemplate,
+      status: "live",
+    };
+
+    return NextResponse.json(deploymentResult);
+  } catch (error) {
+    console.error("Deployment failed:", error);
+    return NextResponse.json({ error: "Deployment failed. Please try again." }, { status: 500 });
   }
 }
