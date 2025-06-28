@@ -1,40 +1,28 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server"
 
-export function middleware(req: NextRequest) {
-  const host = req.headers.get("host") || ""
+export function middleware(request: NextRequest) {
+  const host = request.headers.get("host") || ""
   const subdomain = host.split(".")[0]
 
-  // Skip for main domain, localhost, and special subdomains
-  if (
-    host === "portify.co.in" || 
-    host === "www.portify.co.in" ||
-    host.includes("localhost") ||
-    host.includes("vercel.app") ||
-    host.includes("netlify.app") ||
-    subdomain === "api" ||
-    subdomain === "admin" ||
-    subdomain === "www"
-  ) {
+  const isProduction = process.env.NODE_ENV === "production"
+  const baseDomain = isProduction ? "portify.co.in" : "localhost:3000"
+
+  const isMainApp =
+    host === baseDomain ||
+    host === `www.${baseDomain}` ||
+    host.includes("vercel.app")
+
+  if (isMainApp) {
     return NextResponse.next()
   }
 
-  // Rewrite to internal route like /_sub/[subdomain]
-  const url = req.nextUrl.clone()
+  // Rewrite subdomain to /_sub/[subdomain] route
+  const url = request.nextUrl.clone()
   url.pathname = `/_sub/${subdomain}${url.pathname}`
   return NextResponse.rewrite(url)
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - _sub (internal subdomain routes)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico|_sub).*)",
-  ],
+  matcher: ["/((?!_next|favicon.ico|api|static|.*\\..*).*)"],
 }
