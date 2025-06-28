@@ -14,28 +14,30 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// type PageProps = {
+//   params: Promise<{
+//     subdomain: string
+//   }>
+// }
+
 type PageProps = {
-  params: Promise<{
-    subdomain: string
-  }>
+  params: { subdomain: string }
 }
 
 export default async function SubdomainPage({ params }: PageProps) {
-  const { subdomain } = await params
+  const { subdomain } = params;
 
-  // Get portfolio data
   const { data: portfolio, error } = await supabase
     .from("portfolios")
     .select("*")
     .eq("subdomain", subdomain)
     .eq("is_deployed", true)
-    .single()
+    .single();
 
   if (error || !portfolio) {
-    notFound()
+    notFound();
   }
 
-  // Prepare portfolio data for template
   const portfolioData = {
     name: portfolio.name,
     title: portfolio.title || portfolio.name,
@@ -53,38 +55,30 @@ export default async function SubdomainPage({ params }: PageProps) {
       twitter: "",
       website: ""
     }
-  }
+  };
 
-  // Render the appropriate template
-  const renderTemplate = () => {
-    const props = { data: portfolioData, editMode: false }
+  const props = { data: portfolioData, editMode: false };
 
-    switch (portfolio.template) {
-      case "MinimalTemplate":
-        return <MinimalTemplate {...props} />
-      case "ModernTemplate":
-        return <ModernTemplate {...props} />
-      case "CreativeTemplate":
-        return <CreativeTemplate {...props} />
-      case "ProfessionalTemplate":
-        return <ProfessionalTemplate {...props} />
-      case "TechTemplate":
-        return <TechTemplate {...props} />
-      case "ExecutiveTemplate":
-        return <ExecutiveTemplate {...props} />
-      case "ArtisticTemplate":
-        return <ArtisticTemplate {...props} />
-      default:
-        return <PortfolioTemplate {...props} />
-    }
-  }
+  const templateMap = {
+    MinimalTemplate: MinimalTemplate,
+    ModernTemplate: ModernTemplate,
+    CreativeTemplate: CreativeTemplate,
+    ProfessionalTemplate: ProfessionalTemplate,
+    TechTemplate: TechTemplate,
+    ExecutiveTemplate: ExecutiveTemplate,
+    ArtisticTemplate: ArtisticTemplate,
+    PortfolioTemplate: PortfolioTemplate
+  };
+
+  const SelectedTemplate =
+    typeof portfolio.template === "string" && portfolio.template in templateMap
+      ? templateMap[portfolio.template as keyof typeof templateMap]
+      : PortfolioTemplate;
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
-      {/* Portfolio Content */}
-      {renderTemplate()}
+      <SelectedTemplate {...props} />
 
-      {/* Subtle branding footer */}
       <div className="fixed bottom-4 right-4 z-50">
         <a
           href="/"
@@ -102,5 +96,5 @@ export default async function SubdomainPage({ params }: PageProps) {
         </a>
       </div>
     </div>
-  )
+  );
 }
