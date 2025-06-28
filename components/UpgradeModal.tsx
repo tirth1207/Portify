@@ -28,6 +28,8 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+  const [showQr, setShowQr] = useState(false)
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -41,17 +43,31 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    const res = await fetch("/api/payment-proof", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+
+    if (!res.ok) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+      setIsSubmitting(false)
+      return
+    }
 
     setStep("success")
     setIsSubmitting(false)
 
     toast({
-      title: "Payment proof submitted! 🚀",
-      description: "We'll verify your payment and activate Pro features within 24 hours.",
+      title: "Payment proof submitted!",
+      description: "We'll verify your payment and activate Pro within 24 hrs.",
     })
   }
+
 
   const handleUpiDeepLink = () => {
     const upiId = "rathod2304hetal@okaxis"
@@ -60,6 +76,7 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
 
     const upiUrl = `upi://pay?pa=${upiId}&pn=Portify&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`
     window.location.href = upiUrl
+    setShowQr(true)
   }
 
   const handleClose = () => {
@@ -226,10 +243,15 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
                   </CardHeader>
                   <CardContent className="text-center">
                     <div className="w-48 h-48 mx-auto mb-4 bg-white dark:bg-gray-700 rounded-xl flex items-center justify-center border-2 border-gray-200 dark:border-gray-600">
-                      <div className="text-center w-full h-full flex items-center justify-center">
+                      {showQr ? (
                         <UpiQRCode upiId="rathod2304hetal@okaxis" amount={299} />
-                      </div>
+                      ) : (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 px-4 text-center">
+                          Click "Pay with UPI App" to show QR code if the app doesn't open.
+                        </div>
+                      )}
                     </div>
+
                     <Button
                       onClick={handleUpiDeepLink}
                       className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"

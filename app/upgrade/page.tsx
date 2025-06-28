@@ -20,6 +20,7 @@ export default function UpgradePage() {
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showQr, setShowQr] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -44,12 +45,11 @@ export default function UpgradePage() {
     const upiId = "rathod2304hetal@okaxis"
     const amount = "299" // Example amount
     const note = "Portify Pro Upgrade"
-
-    // UPI deep link format
     const upiUrl = `upi://pay?pa=${upiId}&pn=Portify&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`
 
     // Try to open UPI app, fallback to showing instructions
     window.location.href = upiUrl
+    setShowQr(true)
   }
 
   if (isSubmitted) {
@@ -133,9 +133,13 @@ export default function UpgradePage() {
               <CardContent className="text-center">
                 {/* QR Code Placeholder */}
                 <div className="w-64 h-64 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center border-4 border-white dark:border-gray-600 shadow-lg">
-                  <div className="text-center">
+                  {showQr ? (
                     <UpiQRCode upiId="rathod2304hetal@okaxis" amount={299} />
-                  </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm dark:text-gray-400 px-4 text-center">
+                      Click the button below to open UPI app. If it doesn't work, scan the QR code that appears.
+                    </p>
+                  )}
                 </div>
 
                 {/* UPI Deep Link Button */}
