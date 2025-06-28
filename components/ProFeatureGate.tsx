@@ -62,7 +62,7 @@ export default function ProFeatureGate({ children, feature, fallback }: ProFeatu
       case "deploy":
         return {
           title: "Subdomain Deployment",
-          description: "Deploy your portfolio to a custom subdomain (yourname.portfoliobuilder.app)",
+          description: "Deploy your portfolio to a custom subdomain (yourname.portify.co.in)",
           plan: "Standard"
         }
       case "export":

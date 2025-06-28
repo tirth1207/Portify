@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     const subdomain = generateSubdomain(name)
-    const domainName = `${subdomain}.portfoliobuilder.app`
+    const domainName = `${subdomain}.portify.co.in`
 
     // Check if subdomain already exists in database
     const { data: existingPortfolio } = await supabase

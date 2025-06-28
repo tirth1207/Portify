@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     const subdomain = generateSubdomain(portfolioData.name);
-    const deploymentUrl = `https://${subdomain}.portfoliobuilder.app`;
+    const deploymentUrl = `https://${subdomain}.portify.co.in`;
 
     // Check if subdomain already exists
     const { data: existingPortfolio } = await supabase

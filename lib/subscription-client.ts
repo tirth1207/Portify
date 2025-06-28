@@ -35,7 +35,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     description: "For creators who want more control and visibility.",
     features: [
       "Create up to 5 portfolios",
-      "Subdomain deployment (yourname.portfoliobuilder.app)",
+      "Subdomain deployment (yourname.portify.co.in)",
       "More template choices",
       "Remove Portify branding"
     ],
