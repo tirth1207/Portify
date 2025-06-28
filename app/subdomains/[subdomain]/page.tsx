@@ -1,8 +1,8 @@
-import { createClient } from "@supabase/supabase-js"
-import { notFound } from "next/navigation"
-import PortfolioTemplate from "@/components/templates/PortfolioTemplate"
-import MinimalTemplate from "@/components/templates/MinimalTemplate"
-import ModernTemplate from "@/components/templates/ModernTemplate"
+import { createClient } from "@supabase/supabase-js";
+import { notFound } from "next/navigation";
+import PortfolioTemplate from "@/components/templates/PortfolioTemplate";
+import MinimalTemplate from "@/components/templates/MinimalTemplate";
+import ModernTemplate from "@/components/templates/ModernTemplate";
 import CreativeTemplate from "@/components/templates/CreativeTemplate"
 import ProfessionalTemplate from "@/components/templates/ProfessionalTemplate"
 import TechTemplate from "@/components/templates/TechTemplate"
@@ -27,14 +27,24 @@ type PageProps = {
 export default async function SubdomainPage({ params }: PageProps) {
   const { subdomain } = params;
 
+  // Debug: Log environment variables and subdomain
+  console.log('[DEBUG] SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('[DEBUG] SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'present' : 'missing');
+  console.log('[DEBUG] Subdomain param:', subdomain);
+
   const { data: portfolio, error } = await supabase
     .from("portfolios")
     .select("*")
     .eq("subdomain", subdomain)
-    .eq("is_deployed", true)
+    .eq("is_deployed", "TRUE")
     .single();
 
+  // Debug: Log query result and error
+  console.log('[DEBUG] Supabase error:', error);
+  console.log('[DEBUG] Supabase portfolio:', portfolio);
+
   if (error || !portfolio) {
+    console.error('[DEBUG] Not found triggered. Error:', error, 'Portfolio:', portfolio);
     notFound();
   }
 
@@ -60,20 +70,21 @@ export default async function SubdomainPage({ params }: PageProps) {
   const props = { data: portfolioData, editMode: false };
 
   const templateMap = {
-    MinimalTemplate: MinimalTemplate,
-    ModernTemplate: ModernTemplate,
-    CreativeTemplate: CreativeTemplate,
-    ProfessionalTemplate: ProfessionalTemplate,
-    TechTemplate: TechTemplate,
-    ExecutiveTemplate: ExecutiveTemplate,
-    ArtisticTemplate: ArtisticTemplate,
-    PortfolioTemplate: PortfolioTemplate
+    minimal: MinimalTemplate,
+    modern: ModernTemplate,
+    creative: CreativeTemplate,
+    professional: ProfessionalTemplate,
+    tech: TechTemplate,
+    executive: ExecutiveTemplate,
+    artistic: ArtisticTemplate,
+    portfolio: PortfolioTemplate,
   };
 
-  const SelectedTemplate =
-    typeof portfolio.template === "string" && portfolio.template in templateMap
-      ? templateMap[portfolio.template as keyof typeof templateMap]
-      : PortfolioTemplate;
+  const templateKey = typeof portfolio.template === "string"
+    ? (portfolio.template.toLowerCase() as keyof typeof templateMap)
+    : "portfolio" as keyof typeof templateMap;
+
+  const SelectedTemplate = templateMap[templateKey] || PortfolioTemplate;
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">

@@ -14,15 +14,28 @@ export function middleware(request: NextRequest) {
     host.includes("vercel.app")
 
   if (isMainApp) {
+    console.log(`[middleware] Main app accessed → ${host}`)
     return NextResponse.next()
   }
 
-  // 👇 Update this rewrite path
   const url = request.nextUrl.clone()
-  url.pathname = `/subdomain/${subdomain}${url.pathname}`
+
+  // Prevent infinite loop or malformed URL rewrites
+  if (!subdomain || subdomain === "www" || subdomain === "api") {
+    console.warn(`[middleware] Invalid or reserved subdomain: ${subdomain}`)
+    return NextResponse.next()
+  }
+
+  // Rewrite to /_sub/[subdomain]/[...rest]
+  url.pathname = `/subdomains/${subdomain}${url.pathname}`
+  console.log(`[middleware] Subdomain: ${subdomain} → rewriting to ${url.pathname}`)
+
   return NextResponse.rewrite(url)
 }
 
 export const config = {
-  matcher: ["/((?!_next|favicon.ico|api|static|.*\\..*).*)"],
+  matcher: [
+    // Match all paths except these
+    "/((?!_next|favicon.ico|api|static|.*\\..*).*)",
+  ],
 }
