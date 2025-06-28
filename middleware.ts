@@ -1,64 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+// middleware.ts
+import { NextRequest, NextResponse } from "next/server"
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export function middleware(req: NextRequest) {
+  const host = req.headers.get("host") || ""
+  const subdomain = host.split(".")[0]
 
-export function middleware(request: NextRequest) {
-  const hostname = request.headers.get('host') || ''
-  const url = request.nextUrl.clone()
-
-  // Check if this is a subdomain request
-  const subdomain = hostname.split('.')[0]
-  
-  // Skip if it's the main domain or localhost
-  if (hostname === 'portify.co.in' || hostname === 'localhost:3000' || hostname.includes('localhost')) {
+  // Skip for main domain, localhost, and special subdomains
+  if (
+    host === "portify.co.in" || 
+    host === "www.portify.co.in" ||
+    host.includes("localhost") ||
+    host.includes("vercel.app") ||
+    host.includes("netlify.app") ||
+    subdomain === "api" ||
+    subdomain === "admin" ||
+    subdomain === "www"
+  ) {
     return NextResponse.next()
   }
 
-  // Check if it's a valid subdomain (not www, api, etc.)
-  if (subdomain === 'www' || subdomain === 'api' || subdomain === 'admin') {
-    return NextResponse.next()
-  }
-
-  // Check if the subdomain exists in our database
-  return checkSubdomainAndRedirect(request, subdomain)
-}
-
-async function checkSubdomainAndRedirect(request: NextRequest, subdomain: string) {
-  try {
-    // Query the database for the portfolio with this subdomain
-    const { data: portfolio, error } = await supabase
-      .from('portfolios')
-      .select('*')
-      .eq('subdomain', subdomain)
-      .eq('is_deployed', true)
-      .single()
-
-    if (error || !portfolio) {
-      // Subdomain not found, redirect to main site
-      const url = request.nextUrl.clone()
-      url.hostname = 'portify.co.in'
-      url.pathname = '/'
-      return NextResponse.redirect(url)
-    }
-
-    // Portfolio found, serve it via the share route
-    const url = request.nextUrl.clone()
-    url.hostname = 'portify.co.in'
-    url.pathname = `/share/${portfolio.id}`
-    
-    return NextResponse.rewrite(url)
-  } catch (error) {
-    console.error('Error checking subdomain:', error)
-    // On error, redirect to main site
-    const url = request.nextUrl.clone()
-    url.hostname = 'portify.co.in'
-    url.pathname = '/'
-    return NextResponse.redirect(url)
-  }
+  // Rewrite to internal route like /_sub/[subdomain]
+  const url = req.nextUrl.clone()
+  url.pathname = `/_sub/${subdomain}${url.pathname}`
+  return NextResponse.rewrite(url)
 }
 
 export const config = {
@@ -69,7 +33,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - _sub (internal subdomain routes)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico|_sub).*)",
   ],
 }
