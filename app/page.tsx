@@ -15,7 +15,12 @@ export default function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="font-bold text-xl">Portfolio Builder</div>
-          <AuthButton />
+          <div className="flex items-center gap-4">
+            <Link href="/login">
+              <Button >Sign In</Button>
+            </Link>
+            {/* <AuthButton /> */}
+          </div>
         </div>
       </nav>
 
@@ -36,7 +41,7 @@ export default function Home() {
             </BlurFade>
             <BlurFade delay={BLUR_FADE_DELAY * 3}>
               <div className="mt-10 flex items-center justify-center gap-x-6">
-                <Link href="/upload">
+                <Link href="/login">
                   <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3 text-lg">
                     Get Started <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -174,7 +179,7 @@ export default function Home() {
                 Join thousands of professionals who've created stunning portfolios with our platform.
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6">
-                <Link href="/upload">
+                <Link href="/login">
                   <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3 text-lg">
                     Start Building Now <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>

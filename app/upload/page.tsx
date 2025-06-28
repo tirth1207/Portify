@@ -5,11 +5,11 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Upload, FileText, Loader2, Lock } from 'lucide-react'
+import { Upload, FileText, Loader2, Lock } from "lucide-react"
 import BlurFade from "@/components/magicui/blur-fade"
-import AuthButton from "@/components/AuthButton"
 import { supabase } from "@/lib/supabase"
 import type { User } from "@supabase/supabase-js"
+import Link from "next/link"
 
 export default function UploadPage() {
   const [loading, setLoading] = useState(false)
@@ -135,7 +135,9 @@ export default function UploadPage() {
                   Please sign in to upload your resume and create your portfolio. Your data will be securely stored and
                   accessible across all your devices.
                 </p>
-                <AuthButton />
+                <Link href="/login">
+                  <Button className="bg-black hover:bg-gray-800 text-white">Sign In to Continue</Button>
+                </Link>
               </CardContent>
             </Card>
           </BlurFade>
@@ -153,9 +155,7 @@ export default function UploadPage() {
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Upload your PDF resume and let our AI extract your information
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Signed in as {user.email}
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Signed in as {user.email}</p>
           </div>
         </BlurFade>
 

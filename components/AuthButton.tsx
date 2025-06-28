@@ -19,6 +19,7 @@ import { supabase } from "@/lib/supabase"
 import { User, LogOut, Settings, FileText, Loader2 } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import LoginForm from "@/components/login-form"
 
 interface AuthButtonProps {
   onAuthChange?: (user: SupabaseUser | null) => void
@@ -163,7 +164,10 @@ export default function AuthButton({ onAuthChange }: AuthButtonProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.user_metadata?.avatar_url || "/placeholder.svg"} alt={user.user_metadata?.full_name || user.email} />
+              <AvatarImage
+                src={user.user_metadata?.avatar_url || "/placeholder.svg"}
+                alt={user.user_metadata?.full_name || user.email}
+              />
               <AvatarFallback>
                 {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -201,7 +205,15 @@ export default function AuthButton({ onAuthChange }: AuthButtonProps) {
   }
 
   if (showAuth) {
-    return <AuthModal onClose={() => setShowAuth(false)} onSignIn={handleSignIn} onSignUp={handleSignUp} onGoogleSignIn={handleGoogleSignIn} loading={authLoading} />
+    return (
+      <AuthModal
+        onClose={() => setShowAuth(false)}
+        onSignIn={handleSignIn}
+        onSignUp={handleSignUp}
+        onGoogleSignIn={handleGoogleSignIn}
+        loading={authLoading}
+      />
+    )
   }
 
   return (
@@ -224,116 +236,24 @@ function AuthModal({
   onGoogleSignIn: () => void
   loading: boolean
 }) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [fullName, setFullName] = useState("")
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center">Welcome to Portfolio Builder</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
-                <Input
-                  id="signin-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                />
-              </div>
-              <Button
-                onClick={() => onSignIn(email, password)}
-                disabled={loading || !email || !password}
-                className="w-full"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Sign In
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="signup" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-name">Full Name</Label>
-                <Input
-                  id="signup-name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
-                <Input
-                  id="signup-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a password"
-                />
-              </div>
-              <Button
-                onClick={() => onSignUp(email, password, fullName)}
-                disabled={loading || !email || !password || !fullName}
-                className="w-full"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Sign Up
-              </Button>
-            </TabsContent>
-          </Tabs>
-
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-
-          <Button onClick={onGoogleSignIn} disabled={loading} variant="outline" className="w-full">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Continue with Google
-          </Button>
-
-          <div className="flex justify-center mt-4">
-            <Button variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative">
+        <LoginForm 
+          onSignIn={onSignIn}
+          onSignUp={onSignUp}
+          onGoogleSignIn={onGoogleSignIn}
+          loading={loading}
+        />
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={onClose}
+          className="absolute -top-2 -right-2 rounded-full w-8 h-8 p-0 bg-white shadow-md hover:bg-gray-50"
+        >
+          ×
+        </Button>
+      </div>
     </div>
   )
 }

@@ -1,9 +1,6 @@
 "use client"
 
-import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import BlurFade from "@/components/magicui/blur-fade"
 import { Mail, Phone, MapPin } from "lucide-react"
 
@@ -37,40 +34,6 @@ interface MinimalTemplateProps {
 }
 
 export default function MinimalTemplate({ data, editMode = false, onSave }: MinimalTemplateProps) {
-  const [editData, setEditData] = useState(data)
-
-  const EditableText = ({
-    value,
-    onChange,
-    className = "",
-    multiline = false,
-    placeholder = "",
-  }: {
-    value: string
-    onChange: (value: string) => void
-    className?: string
-    multiline?: boolean
-    placeholder?: string
-  }) => {
-    if (!editMode) return <span className={className}>{value}</span>
-
-    return multiline ? (
-      <Textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`${className} min-h-[100px] border-none shadow-none resize-none`}
-        placeholder={placeholder}
-      />
-    ) : (
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`${className} border-none shadow-none`}
-        placeholder={placeholder}
-      />
-    )
-  }
-
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
       <div className="max-w-4xl mx-auto px-8 py-16">
@@ -80,26 +43,16 @@ export default function MinimalTemplate({ data, editMode = false, onSave }: Mini
             <Avatar className="w-24 h-24 mx-auto mb-8 border border-gray-200 dark:border-gray-700">
               <AvatarImage src="/placeholder.svg?height=96&width=96" />
               <AvatarFallback className="text-xl font-light bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
-                {editData.name
+                {data.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
               </AvatarFallback>
             </Avatar>
 
-            <EditableText
-              value={editData.name}
-              onChange={(value) => setEditData({ ...editData, name: value })}
-              className="text-4xl font-light text-gray-900 dark:text-white mb-4 block tracking-wide"
-              placeholder="Your Name"
-            />
+            <h1 className="text-4xl font-light text-gray-900 dark:text-white mb-4 tracking-wide">{data.name}</h1>
 
-            <EditableText
-              value={editData.title}
-              onChange={(value) => setEditData({ ...editData, title: value })}
-              className="text-lg text-gray-600 dark:text-gray-400 font-light tracking-wide block"
-              placeholder="Your Professional Title"
-            />
+            <h2 className="text-lg text-gray-600 dark:text-gray-400 font-light tracking-wide">{data.title}</h2>
 
             <div className="flex justify-center items-center gap-6 mt-8 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-2">
@@ -124,25 +77,19 @@ export default function MinimalTemplate({ data, editMode = false, onSave }: Mini
             <h2 className="text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-8 font-light">
               About
             </h2>
-            <EditableText
-              value={editData.summary}
-              onChange={(value) => setEditData({ ...editData, summary: value })}
-              className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 font-light"
-              multiline
-              placeholder="Tell us about yourself..."
-            />
+            <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 font-light">{data.summary}</p>
           </div>
         </BlurFade>
 
         {/* Experience */}
-        {editData.experience && editData.experience.length > 0 && (
+        {data.experience && data.experience.length > 0 && (
           <BlurFade delay={0.3}>
             <div className="mb-16">
               <h2 className="text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-8 font-light">
                 Experience
               </h2>
               <div className="space-y-12">
-                {editData.experience.map((exp, index) => (
+                {data.experience.map((exp, index) => (
                   <div key={index} className="group">
                     <div className="flex justify-between items-start mb-4">
                       <div>
@@ -167,14 +114,14 @@ export default function MinimalTemplate({ data, editMode = false, onSave }: Mini
         )}
 
         {/* Skills */}
-        {editData.skills && editData.skills.length > 0 && (
+        {data.skills && data.skills.length > 0 && (
           <BlurFade delay={0.4}>
             <div className="mb-16">
               <h2 className="text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-8 font-light">
                 Skills
               </h2>
               <div className="flex flex-wrap gap-3">
-                {editData.skills.map((skill, index) => (
+                {data.skills.map((skill, index) => (
                   <span
                     key={index}
                     className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-none font-light"
@@ -188,20 +135,20 @@ export default function MinimalTemplate({ data, editMode = false, onSave }: Mini
         )}
 
         {/* Projects */}
-        {editData.projects && editData.projects.length > 0 && (
+        {data.projects && data.projects.length > 0 && (
           <BlurFade delay={0.5}>
             <div className="mb-16">
               <h2 className="text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-8 font-light">
                 Projects
               </h2>
               <div className="space-y-12">
-                {editData.projects.map((project, index) => (
+                {data.projects.map((project, index) => (
                   <div key={index}>
                     <h3 className="text-xl font-light text-gray-900 dark:text-white mb-3">{project.name}</h3>
                     <p className="text-gray-700 dark:text-gray-300 mb-4 font-light leading-relaxed">
                       {project.description}
                     </p>
-                    {project.techStack && (
+                    {project.techStack && project.techStack.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {project.techStack.map((tech, i) => (
                           <span
@@ -221,14 +168,14 @@ export default function MinimalTemplate({ data, editMode = false, onSave }: Mini
         )}
 
         {/* Education */}
-        {editData.education && editData.education.length > 0 && (
+        {data.education && data.education.length > 0 && (
           <BlurFade delay={0.6}>
             <div>
               <h2 className="text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-8 font-light">
                 Education
               </h2>
               <div className="space-y-6">
-                {editData.education.map((edu, index) => (
+                {data.education.map((edu, index) => (
                   <div key={index} className="flex justify-between items-start">
                     <div>
                       <h3 className="text-lg font-light text-gray-900 dark:text-white">{edu.degree}</h3>

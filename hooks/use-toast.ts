@@ -66,7 +66,7 @@ const addToRemoveQueue = (toastId: string) => {
       type: "REMOVE_TOAST",
       toastId: toastId,
     })
-  }, 3000)
+  }, 3000) // 3 seconds
 
   toastTimeouts.set(toastId, timeout)
 }
@@ -76,7 +76,7 @@ export const reducer = (state: State, action: Action): State => {
     case "ADD_TOAST":
       return {
         ...state,
-        toasts: [action.toast, ...state.toasts].slice(0, 1),
+        toasts: [action.toast, ...state.toasts].slice(0, 3), // Limit to 3 toasts
       }
 
     case "UPDATE_TOAST":
@@ -88,8 +88,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -149,25 +147,115 @@ function useToast() {
   }, [state])
 
   const toast = React.useCallback(({ title, description, variant = "default" }: ToastProps) => {
-    // Simple toast implementation - in production, use a proper toast library
     const id = genId()
+
+    // Create toast element with close button
     const toastElement = document.createElement("div")
-    toastElement.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
-      variant === "destructive" ? "bg-red-500 text-white" : "bg-black text-white"
+    toastElement.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm w-full transform transition-all duration-300 ease-in-out ${
+      variant === "destructive"
+        ? "bg-red-500 text-white border border-red-600"
+        : "bg-white dark:bg-slate-800 text-gray-900 dark:text-white border border-gray-200 dark:border-slate-700"
     }`
+
+    toastElement.style.animation = "slideInRight 0.3s ease-out"
+
     toastElement.innerHTML = `
-      <div class="font-semibold">${title}</div>
-      ${description ? `<div class="text-sm opacity-90">${description}</div>` : ""}
+      <div class="flex items-start justify-between">
+        <div class="flex-1 pr-3">
+          ${title ? `<div class="font-semibold text-sm mb-1">${title}</div>` : ""}
+          ${description ? `<div class="text-sm opacity-90">${description}</div>` : ""}
+        </div>
+        <button 
+          class="flex-shrink-0 ml-2 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+          onclick="this.parentElement.parentElement.remove()"
+          aria-label="Close"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
     `
 
+    // Add CSS animation keyframes if not already added
+    if (!document.querySelector("#toast-animations")) {
+      const style = document.createElement("style")
+      style.id = "toast-animations"
+      style.textContent = `
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideOutRight {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+      `
+      document.head.appendChild(style)
+    }
+
+    // Stack toasts properly
+    const existingToasts = document.querySelectorAll("[data-toast]")
+    toastElement.setAttribute("data-toast", id)
+    toastElement.style.top = `${16 + existingToasts.length * 80}px`
+
     document.body.appendChild(toastElement)
+
+    // Auto remove after 3 seconds
+    const autoRemoveTimeout = setTimeout(() => {
+      if (toastElement.parentNode) {
+        toastElement.style.animation = "slideOutRight 0.3s ease-in"
+        setTimeout(() => {
+          if (toastElement.parentNode) {
+            toastElement.remove()
+          }
+        }, 300)
+      }
+    }, 3000)
+
+    // Clear timeout if manually closed
+    const closeButton = toastElement.querySelector("button")
+    if (closeButton) {
+      closeButton.addEventListener("click", () => {
+        clearTimeout(autoRemoveTimeout)
+        toastElement.style.animation = "slideOutRight 0.3s ease-in"
+        setTimeout(() => {
+          if (toastElement.parentNode) {
+            toastElement.remove()
+          }
+        }, 300)
+      })
+    }
 
     const update = (props: ToasterToast) =>
       dispatch({
         type: "UPDATE_TOAST",
         toast: { ...props, id },
       })
-    const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+    const dismiss = () => {
+      clearTimeout(autoRemoveTimeout)
+      if (toastElement.parentNode) {
+        toastElement.style.animation = "slideOutRight 0.3s ease-in"
+        setTimeout(() => {
+          if (toastElement.parentNode) {
+            toastElement.remove()
+          }
+        }, 300)
+      }
+      dispatch({ type: "DISMISS_TOAST", toastId: id })
+    }
 
     dispatch({
       type: "ADD_TOAST",

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Edit, Share, ArrowLeft } from "lucide-react"
+import { Share, ArrowLeft, Copy, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import PortfolioTemplate from "@/components/templates/PortfolioTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
@@ -13,11 +13,22 @@ import MinimalTemplate from "@/components/templates/MinimalTemplate"
 import TechTemplate from "@/components/templates/TechTemplate"
 import ArtisticTemplate from "@/components/templates/ArtisticTemplate"
 import ExecutiveTemplate from "@/components/templates/ExecutiveTemplate"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function PortfolioPage() {
   const [resume, setResume] = useState<any>(null)
   const [template, setTemplate] = useState("minimal")
-  const [editMode, setEditMode] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
+  const [isSharing, setIsSharing] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     const storedResume = localStorage.getItem("parsedResume")
@@ -29,7 +40,56 @@ export default function PortfolioPage() {
   const handleSave = (updatedData: any) => {
     setResume(updatedData)
     localStorage.setItem("parsedResume", JSON.stringify(updatedData))
-    setEditMode(false)
+  }
+
+  const generateShareLink = async () => {
+    setIsSharing(true)
+    try {
+      // Generate a unique ID for this portfolio
+      const portfolioId = Math.random().toString(36).substr(2, 9)
+
+      // Store the portfolio data with the unique ID
+      const portfolioData = {
+        id: portfolioId,
+        data: resume,
+        template: template,
+        createdAt: new Date().toISOString(),
+      }
+
+      // In a real app, you'd save this to a database
+      // For now, we'll use localStorage with a special key
+      localStorage.setItem(`shared_portfolio_${portfolioId}`, JSON.stringify(portfolioData))
+
+      // Generate the share URL
+      const baseUrl = window.location.origin
+      const shareUrl = `${baseUrl}/share/${portfolioId}`
+      setShareUrl(shareUrl)
+
+      toast({
+        title: "Share link generated!",
+        description: "Your portfolio is now ready to share.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error generating share link",
+        description: "Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSharing(false)
+    }
+  }
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl)
+    toast({
+      title: "Copied!",
+      description: "Share link copied to clipboard",
+    })
+  }
+
+  const openInNewTab = () => {
+    window.open(shareUrl, "_blank")
   }
 
   if (!resume) {
@@ -44,7 +104,7 @@ export default function PortfolioPage() {
   }
 
   const renderTemplate = () => {
-    const props = { data: resume, editMode, onSave: handleSave }
+    const props = { data: resume, editMode: false, onSave: handleSave }
 
     switch (template) {
       case "minimal":
@@ -78,14 +138,56 @@ export default function PortfolioPage() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <Button variant={editMode ? "default" : "outline"} size="sm" onClick={() => setEditMode(!editMode)}>
-            <Edit className="h-4 w-4 mr-2" />
-            {editMode ? "Save" : "Edit"}
-          </Button>
-          <Button variant="outline" size="sm">
-            <Share className="h-4 w-4 mr-2" />
-            Share
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" onClick={generateShareLink}>
+                <Share className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Share Your Portfolio</DialogTitle>
+                <DialogDescription>Generate a unique link to share your portfolio with others.</DialogDescription>
+              </DialogHeader>
+
+              {shareUrl ? (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <p className="text-sm font-medium mb-2">Your portfolio link:</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-sm bg-white dark:bg-gray-900 p-2 rounded border">{shareUrl}</code>
+                      <Button size="sm" variant="outline" onClick={copyToClipboard}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button onClick={openInNewTab} className="flex-1">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                    <Button variant="outline" onClick={copyToClipboard} className="flex-1 bg-transparent">
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 text-center">
+                    This link will show your portfolio without any editing controls.
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Button onClick={generateShareLink} disabled={isSharing}>
+                    {isSharing ? "Generating..." : "Generate Share Link"}
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
           <DeployButton portfolioData={resume} selectedTemplate={template} />
         </div>
       </div>

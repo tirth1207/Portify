@@ -1,14 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import BlurFade from "@/components/magicui/blur-fade"
-import { Edit2 } from "lucide-react"
 
 type Resume = {
   name: string
@@ -40,41 +35,6 @@ interface ModernTemplateProps {
 }
 
 export default function ModernTemplate({ data, editMode = false, onSave }: ModernTemplateProps) {
-  const [editData, setEditData] = useState(data)
-  const [editingSection, setEditingSection] = useState<string | null>(null)
-
-  const handleSave = () => {
-    onSave?.(editData)
-    setEditingSection(null)
-  }
-
-  const EditableText = ({
-    value,
-    onChange,
-    className = "",
-    multiline = false,
-    placeholder = "",
-  }: {
-    value: string
-    onChange: (value: string) => void
-    className?: string
-    multiline?: boolean
-    placeholder?: string
-  }) => {
-    if (!editMode) return <span className={className}>{value}</span>
-
-    return multiline ? (
-      <Textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`${className} min-h-[100px]`}
-        placeholder={placeholder}
-      />
-    ) : (
-      <Input value={value} onChange={(e) => onChange(e.target.value)} className={className} placeholder={placeholder} />
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-6xl mx-auto px-6 py-12">
@@ -84,26 +44,16 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
             <Avatar className="w-32 h-32 mx-auto mb-6 border-4 border-white shadow-xl">
               <AvatarImage src="/placeholder.svg?height=128&width=128" />
               <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                {editData.name
+                {data.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
               </AvatarFallback>
             </Avatar>
 
-            <EditableText
-              value={editData.name}
-              onChange={(value) => setEditData({ ...editData, name: value })}
-              className="text-5xl font-bold text-gray-900 dark:text-white mb-4 block"
-              placeholder="Your Name"
-            />
+            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">{data.name}</h1>
 
-            <EditableText
-              value={editData.title}
-              onChange={(value) => setEditData({ ...editData, title: value })}
-              className="text-xl text-indigo-600 dark:text-indigo-400 font-medium block"
-              placeholder="Your Professional Title"
-            />
+            <h2 className="text-xl text-indigo-600 dark:text-indigo-400 font-medium">{data.title}</h2>
           </div>
         </BlurFade>
 
@@ -111,33 +61,16 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
         <BlurFade delay={0.2}>
           <Card className="mb-12 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                About Me
-                {editMode && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingSection(editingSection === "about" ? null : "about")}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </CardTitle>
+              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">About Me</CardTitle>
             </CardHeader>
             <CardContent>
-              <EditableText
-                value={editData.summary}
-                onChange={(value) => setEditData({ ...editData, summary: value })}
-                className="text-gray-700 dark:text-gray-300 leading-relaxed"
-                multiline
-                placeholder="Tell us about yourself..."
-              />
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{data.summary}</p>
             </CardContent>
           </Card>
         </BlurFade>
 
         {/* Skills Section */}
-        {editData.skills && editData.skills.length > 0 && (
+        {data.skills && data.skills.length > 0 && (
           <BlurFade delay={0.3}>
             <Card className="mb-12 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader>
@@ -145,7 +78,7 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-3">
-                  {editData.skills.map((skill, index) => (
+                  {data.skills.map((skill, index) => (
                     <Badge
                       key={index}
                       className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 text-sm font-medium"
@@ -160,7 +93,7 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
         )}
 
         {/* Experience Section */}
-        {editData.experience && editData.experience.length > 0 && (
+        {data.experience && data.experience.length > 0 && (
           <BlurFade delay={0.4}>
             <Card className="mb-12 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader>
@@ -169,7 +102,7 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-8">
-                {editData.experience.map((exp, index) => (
+                {data.experience.map((exp, index) => (
                   <div key={index} className="border-l-4 border-indigo-500 pl-6 pb-6">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">{exp.role}</h3>
                     <p className="text-indigo-600 dark:text-indigo-400 font-medium mb-2">
@@ -188,7 +121,7 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
         )}
 
         {/* Projects Section */}
-        {editData.projects && editData.projects.length > 0 && (
+        {data.projects && data.projects.length > 0 && (
           <BlurFade delay={0.5}>
             <Card className="mb-12 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader>
@@ -196,7 +129,7 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {editData.projects.map((project, index) => (
+                  {data.projects.map((project, index) => (
                     <div
                       key={index}
                       className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-700 dark:to-slate-800 rounded-lg p-6 shadow-lg"
@@ -221,14 +154,14 @@ export default function ModernTemplate({ data, editMode = false, onSave }: Moder
         )}
 
         {/* Education Section */}
-        {editData.education && editData.education.length > 0 && (
+        {data.education && data.education.length > 0 && (
           <BlurFade delay={0.6}>
             <Card className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Education</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {editData.education.map((edu, index) => (
+                {data.education.map((edu, index) => (
                   <div key={index} className="flex justify-between items-start">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white">{edu.degree}</h3>
