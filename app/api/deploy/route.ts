@@ -19,7 +19,7 @@ const generateSubdomain = (name: string) => {
 // Simulate deployment to subdomain
 export async function POST(req: NextRequest) {
   try {
-    const { portfolioData, selectedTemplate, userInfo } = await req.json();
+    const { portfolioData, selectedTemplate, customSubdomain } = await req.json();
 
     // Get user from auth header
     const authHeader = req.headers.get('authorization');
@@ -52,14 +52,31 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const subdomain = generateSubdomain(portfolioData.name);
-    const deploymentUrl = `https://${subdomain}.portify.co.in`;
+    // Validate custom subdomain
+    if (!customSubdomain) {
+      return NextResponse.json({ error: "Subdomain is required" }, { status: 400 });
+    }
+
+    const subdomainRegex = /^[a-z0-9-]+$/;
+    if (!subdomainRegex.test(customSubdomain)) {
+      return NextResponse.json({ 
+        error: "Subdomain can only contain lowercase letters, numbers, and hyphens" 
+      }, { status: 400 });
+    }
+
+    if (customSubdomain.length < 3 || customSubdomain.length > 30) {
+      return NextResponse.json({ 
+        error: "Subdomain must be between 3 and 30 characters" 
+      }, { status: 400 });
+    }
+
+    const deploymentUrl = `https://${customSubdomain}.portify.co.in`;
 
     // Check if subdomain already exists
     const { data: existingPortfolio } = await supabase
       .from("portfolios")
       .select("id")
-      .eq("subdomain", subdomain)
+      .eq("subdomain", customSubdomain)
       .single();
 
     if (existingPortfolio) {
@@ -90,7 +107,7 @@ export async function POST(req: NextRequest) {
         education: portfolioData.education || [],
         experience: portfolioData.experience || [],
         template: selectedTemplate,
-        subdomain: subdomain,
+        subdomain: customSubdomain,
         deployment_url: deploymentUrl,
         is_deployed: true,
         updated_at: new Date().toISOString(),
@@ -106,7 +123,7 @@ export async function POST(req: NextRequest) {
     const deploymentResult = {
       success: true,
       deploymentUrl: deploymentUrl,
-      subdomain,
+      subdomain: customSubdomain,
       deployedAt: new Date().toISOString(),
       template: selectedTemplate,
       status: "live",

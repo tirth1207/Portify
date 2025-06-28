@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Rocket, ExternalLink, CheckCircle, X, Loader2, Globe, Calendar, Palette } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Rocket, ExternalLink, CheckCircle, X, Loader2, Globe, Calendar, Palette, Check, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { canDeploySubdomain } from "@/lib/subscription-client"
 import UpgradeModal from "./UpgradeModal"
@@ -38,9 +40,82 @@ export default function DeployDialog({
   const [isDeploying, setIsDeploying] = useState(false)
   const [deploymentResult, setDeploymentResult] = useState<DeploymentResult | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [customSubdomain, setCustomSubdomain] = useState("")
+  const [isCheckingSubdomain, setIsCheckingSubdomain] = useState(false)
+  const [subdomainStatus, setSubdomainStatus] = useState<"available" | "taken" | "invalid" | null>(null)
   const { toast } = useToast()
 
+  // Generate initial subdomain when dialog opens
+  useEffect(() => {
+    if (isOpen && !customSubdomain) {
+      const initialSubdomain = portfolioData.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "")
+        .substring(0, 30)
+      setCustomSubdomain(initialSubdomain)
+      checkSubdomainAvailability(initialSubdomain)
+    }
+  }, [isOpen, portfolioData.name, customSubdomain])
+
+  const checkSubdomainAvailability = async (subdomain: string) => {
+    if (!subdomain || subdomain.length < 3) {
+      setSubdomainStatus("invalid")
+      return
+    }
+
+    // Check if subdomain format is valid
+    const subdomainRegex = /^[a-z0-9-]+$/
+    if (!subdomainRegex.test(subdomain)) {
+      setSubdomainStatus("invalid")
+      return
+    }
+
+    setIsCheckingSubdomain(true)
+    setSubdomainStatus(null)
+
+    try {
+      const response = await fetch("/api/check-subdomain", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subdomain }),
+      })
+
+      const result = await response.json()
+      setSubdomainStatus(result.available ? "available" : "taken")
+    } catch (error) {
+      console.error("Error checking subdomain:", error)
+      setSubdomainStatus("invalid")
+    } finally {
+      setIsCheckingSubdomain(false)
+    }
+  }
+
+  const handleSubdomainChange = (value: string) => {
+    const cleanValue = value.toLowerCase().replace(/[^a-z0-9-]/g, "")
+    setCustomSubdomain(cleanValue)
+    
+    // Debounce the availability check
+    const timeoutId = setTimeout(() => {
+      checkSubdomainAvailability(cleanValue)
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }
+
   const handleDeploy = async () => {
+    if (subdomainStatus !== "available") {
+      toast({
+        title: "Invalid subdomain",
+        description: "Please choose an available subdomain.",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       // Check if user can deploy subdomain
       const canDeploy = await canDeploySubdomain()
@@ -70,7 +145,8 @@ export default function DeployDialog({
         headers,
         body: JSON.stringify({
           portfolioData,
-          template: selectedTemplate,
+          selectedTemplate,
+          customSubdomain,
         }),
       })
 
@@ -125,6 +201,8 @@ export default function DeployDialog({
     if (!isDeploying) {
       onClose()
       setDeploymentResult(null)
+      setCustomSubdomain("")
+      setSubdomainStatus(null)
     }
   }
 
@@ -142,6 +220,53 @@ export default function DeployDialog({
     return templateNames[template] || template
   }
 
+  const getSubdomainStatusIcon = () => {
+    if (isCheckingSubdomain) {
+      return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+    }
+    
+    switch (subdomainStatus) {
+      case "available":
+        return <Check className="h-4 w-4 text-green-500" />
+      case "taken":
+        return <AlertCircle className="h-4 w-4 text-red-500" />
+      case "invalid":
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />
+      default:
+        return null
+    }
+  }
+
+  const getSubdomainStatusText = () => {
+    if (isCheckingSubdomain) {
+      return "Checking availability..."
+    }
+    
+    switch (subdomainStatus) {
+      case "available":
+        return "Available"
+      case "taken":
+        return "Already taken"
+      case "invalid":
+        return "Invalid format"
+      default:
+        return ""
+    }
+  }
+
+  const getSubdomainStatusColor = () => {
+    switch (subdomainStatus) {
+      case "available":
+        return "text-green-600"
+      case "taken":
+        return "text-red-600"
+      case "invalid":
+        return "text-yellow-600"
+      default:
+        return "text-muted-foreground"
+    }
+  }
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -151,6 +276,9 @@ export default function DeployDialog({
               <Rocket className="h-5 w-5" />
               Deploy Portfolio
             </DialogTitle>
+            <DialogDescription>
+              Deploy your portfolio to a custom subdomain. Choose a unique subdomain name for your portfolio.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -159,7 +287,7 @@ export default function DeployDialog({
                 {/* Deployment Preview */}
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Portfolio Name</span>
                         <span className="text-sm text-muted-foreground">{portfolioData.name}</span>
@@ -173,14 +301,35 @@ export default function DeployDialog({
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Subdomain</span>
+                      
+                      {/* Subdomain Input */}
+                      <div className="space-y-2">
+                        <Label htmlFor="subdomain" className="text-sm font-medium">
+                          Subdomain
+                        </Label>
                         <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {portfolioData.name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").substring(0, 30)}.portify.co.in
+                          <Input
+                            id="subdomain"
+                            value={customSubdomain}
+                            onChange={(e) => handleSubdomainChange(e.target.value)}
+                            placeholder="your-portfolio"
+                            className="flex-1"
+                            disabled={isDeploying}
+                          />
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">
+                            .portify.co.in
                           </span>
                         </div>
+                        
+                        {/* Subdomain Status */}
+                        {subdomainStatus && (
+                          <div className="flex items-center gap-2 text-sm">
+                            {getSubdomainStatusIcon()}
+                            <span className={getSubdomainStatusColor()}>
+                              {getSubdomainStatusText()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -189,7 +338,7 @@ export default function DeployDialog({
                 {/* Deploy Button */}
                 <Button
                   onClick={handleDeploy}
-                  disabled={isDeploying}
+                  disabled={isDeploying || subdomainStatus !== "available"}
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
                 >
                   {isDeploying ? (

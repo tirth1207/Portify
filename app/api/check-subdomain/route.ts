@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
 const supabase = createClient(
@@ -9,47 +9,57 @@ const supabase = createClient(
 // Check if subdomain is available
 export async function POST(req: NextRequest) {
   try {
-    const { name } = await req.json()
-    
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 })
+    const { subdomain } = await req.json()
+
+    if (!subdomain) {
+      return NextResponse.json({ error: "Subdomain is required" }, { status: 400 })
     }
 
-    const generateSubdomain = (name: string) => {
-      return name
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-        .substring(0, 30)
+    // Validate subdomain format
+    const subdomainRegex = /^[a-z0-9-]+$/
+    if (!subdomainRegex.test(subdomain)) {
+      return NextResponse.json({ 
+        available: false, 
+        error: "Subdomain can only contain lowercase letters, numbers, and hyphens" 
+      })
     }
 
-    const subdomain = generateSubdomain(name)
-    const domainName = `${subdomain}.portify.co.in`
+    if (subdomain.length < 3) {
+      return NextResponse.json({ 
+        available: false, 
+        error: "Subdomain must be at least 3 characters long" 
+      })
+    }
+
+    if (subdomain.length > 30) {
+      return NextResponse.json({ 
+        available: false, 
+        error: "Subdomain must be 30 characters or less" 
+      })
+    }
 
     // Check if subdomain already exists in database
-    const { data: existingPortfolio } = await supabase
+    const { data: existingPortfolio, error } = await supabase
       .from("portfolios")
-      .select("id, name")
+      .select("id")
       .eq("subdomain", subdomain)
       .single()
 
-    const isAvailable = !existingPortfolio
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 is "not found" error, which is expected
+      console.error("Database error:", error)
+      return NextResponse.json({ error: "Failed to check subdomain availability" }, { status: 500 })
+    }
+
+    const available = !existingPortfolio
 
     return NextResponse.json({
-      success: true,
+      available,
       subdomain,
-      domainName,
-      isAvailable,
-      existingPortfolio: existingPortfolio ? {
-        name: existingPortfolio.name
-      } : null
+      message: available ? "Subdomain is available" : "Subdomain is already taken"
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Subdomain check failed:", error)
-    return NextResponse.json(
-      { error: "Subdomain check failed", details: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Failed to check subdomain availability" }, { status: 500 })
   }
 }
