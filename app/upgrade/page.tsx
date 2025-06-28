@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { CheckCircle, QrCode, Smartphone, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import BlurFade from "@/components/magicui/blur-fade"
+import UpiQRCode from "@/components/UpiQRCode"
 
 export default function UpgradePage() {
   const [formData, setFormData] = useState({
@@ -133,9 +134,7 @@ export default function UpgradePage() {
                 {/* QR Code Placeholder */}
                 <div className="w-64 h-64 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center border-4 border-white dark:border-gray-600 shadow-lg">
                   <div className="text-center">
-                    <QrCode className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">QR Code</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">₹299 to rathod2304hetal@okaxis</p>
+                    <UpiQRCode upiId="rathod2304hetal@okaxis" amount={299} />
                   </div>
                 </div>
 

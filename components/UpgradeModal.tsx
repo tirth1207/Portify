@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CheckCircle, QrCode, Smartphone, Crown, Zap, Shield, Palette, BarChart3, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import UpiQRCode from "./UpiQRCode"
 
 interface UpgradeModalProps {
   isOpen: boolean
@@ -225,10 +226,8 @@ export default function UpgradeModal({ isOpen, onClose, feature, onUpgradeComple
                   </CardHeader>
                   <CardContent className="text-center">
                     <div className="w-48 h-48 mx-auto mb-4 bg-white dark:bg-gray-700 rounded-xl flex items-center justify-center border-2 border-gray-200 dark:border-gray-600">
-                      <div className="text-center">
-                        <QrCode className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-xs text-gray-500">QR Code</p>
-                        <p className="text-xs text-gray-400">₹299 to rathod2304hetal@okaxis</p>
+                      <div className="text-center w-full h-full flex items-center justify-center">
+                        <UpiQRCode upiId="rathod2304hetal@okaxis" amount={299} />
                       </div>
                     </div>
                     <Button
