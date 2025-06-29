@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import type { Metadata } from "next"
 import { Mona_Sans as FontSans } from "next/font/google"
 import "./globals.css"
+import { Analytics } from "@vercel/analytics/next"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -57,7 +58,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn("w-full min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <ThemeProvider attribute="class" defaultTheme="light">
-          <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
+          <TooltipProvider delayDuration={0}>{children}
+          <Analytics />
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
