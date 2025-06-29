@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Share, ArrowLeft, Copy, ExternalLink } from "lucide-react"
 import Link from "next/link"
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog"
 import ProFeatureGate from "@/components/ProFeatureGate"
 
-export default function PortfolioPage() {
+function PortfolioContent() {
   const [resume, setResume] = useState<any>(null)
   const [template, setTemplate] = useState("minimal")
   const [shareUrl, setShareUrl] = useState("")
@@ -200,44 +200,37 @@ export default function PortfolioPage() {
                 Share
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Share Your Portfolio</DialogTitle>
                 <DialogDescription>
-                  Generate a unique link to share your portfolio with anyone, anywhere.
+                  Generate a shareable link that works on any device
                 </DialogDescription>
               </DialogHeader>
-
               {shareUrl ? (
                 <div className="space-y-4">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                    <p className="text-sm font-medium mb-2">Your portfolio link:</p>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 text-sm bg-white dark:bg-gray-900 p-2 rounded border break-all">
-                        {shareUrl}
-                      </code>
-                      <Button size="sm" variant="outline" onClick={copyToClipboard}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={shareUrl}
+                      readOnly
+                      className="flex-1 p-2 border rounded text-sm"
+                    />
+                    <Button onClick={copyToClipboard} size="sm">
+                      <Copy className="h-4 w-4" />
+                    </Button>
                   </div>
-
                   <div className="flex gap-2">
                     <Button onClick={openInNewTab} className="flex-1">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Preview
+                      Open in New Tab
                     </Button>
-                    <Button variant="outline" onClick={copyToClipboard} className="flex-1 bg-transparent">
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy Link
+                    <Button
+                      variant="outline"
+                      onClick={() => setShareDialogOpen(false)}
+                    >
+                      Close
                     </Button>
-                  </div>
-
-                  <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-3">
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                      ✨ This link works anywhere! Share it via email, social media, or messaging apps. Anyone with the
-                      link can view your portfolio.
-                    </p>
                   </div>
                 </div>
               ) : (
@@ -269,5 +262,20 @@ export default function PortfolioPage() {
       {/* Portfolio Content */}
       <div className="pt-20">{renderTemplate()}</div>
     </div>
+  )
+}
+
+export default function PortfolioPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    }>
+      <PortfolioContent />
+    </Suspense>
   )
 }
