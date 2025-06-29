@@ -10,6 +10,7 @@ import MinimalTemplate from "@/components/templates/MinimalTemplate"
 import TechTemplate from "@/components/templates/TechTemplate"
 import ArtisticTemplate from "@/components/templates/ArtisticTemplate"
 import ExecutiveTemplate from "@/components/templates/ExecutiveTemplate"
+import PremiumTemplate from "@/components/templates/PremiumTemplate"
 
 export default function SharedPortfolioPage() {
   const params = useParams()
@@ -17,6 +18,7 @@ export default function SharedPortfolioPage() {
   const [template, setTemplate] = useState("minimal")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [expired, setExpired] = useState(false)
 
   useEffect(() => {
     const portfolioId = params.id as string
@@ -32,10 +34,15 @@ export default function SharedPortfolioPage() {
       const result = await response.json()
 
       if (result.success && result.data) {
-        setPortfolioData(result.data.data)
+        setPortfolioData(result.data.portfolio_data)
         setTemplate(result.data.template)
       } else {
-        setError(true)
+        // Check if it's an expired error
+        if (result.error && result.error.includes("expired")) {
+          setExpired(true)
+        } else {
+          setError(true)
+        }
       }
     } catch (err) {
       console.error("Error fetching portfolio:", err)
@@ -51,6 +58,37 @@ export default function SharedPortfolioPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading portfolio...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (expired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="mb-8">
+            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Portfolio Link Expired</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              This portfolio link has expired. Shared portfolio links are valid for 24 hours from the time they were created.
+            </p>
+          </div>
+          <a
+            href="/"
+            className="inline-flex items-center px-6 py-3 bg-black hover:bg-gray-800 text-white rounded-lg transition-colors font-medium"
+          >
+            Create Your Own Portfolio
+          </a>
         </div>
       </div>
     )
@@ -73,7 +111,7 @@ export default function SharedPortfolioPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Portfolio Not Found</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-8">
-              The portfolio you're looking for doesn't exist, has expired, or the link may be incorrect.
+              The portfolio you're looking for doesn't exist or the link may be incorrect.
             </p>
           </div>
           <a
@@ -106,6 +144,8 @@ export default function SharedPortfolioPage() {
         return <ArtisticTemplate {...props} />
       case "executive":
         return <ExecutiveTemplate {...props} />
+      case "premium":
+        return <PremiumTemplate {...props} />
       default:
         return <PortfolioTemplate {...props} />
     }

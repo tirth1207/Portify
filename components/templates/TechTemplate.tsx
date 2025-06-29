@@ -47,19 +47,19 @@ export default function TechTemplate({ data, editMode = false, onSave }: TechTem
   return (
     <div className="min-h-screen bg-slate-900 text-green-400 font-mono">
       {/* Terminal Header */}
-      <div className="bg-slate-800 border-b border-green-500/30 p-3 sm:p-4">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="bg-slate-800 border-b border-green-500/30 p-2 sm:p-4">
+        <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
           <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500"></div>
           <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-500"></div>
           <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
-          <span className="ml-3 sm:ml-4 text-xs sm:text-sm text-green-400">portfolio.sh</span>
+          <span className="ml-2 sm:ml-4 text-xs sm:text-sm text-green-400">portfolio.sh</span>
         </div>
         <div className="text-xs sm:text-sm">
           <span className="text-green-500">$</span> cat {data.name.toLowerCase().replace(" ", "_")}.json
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-4 sm:p-8">
+      <div className="w-full max-w-6xl mx-auto p-2 sm:p-8">
         {/* JSON-style Header */}
         <BlurFade delay={0.1}>
           <div className="mb-8 sm:mb-12">

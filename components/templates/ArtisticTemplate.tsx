@@ -55,10 +55,10 @@ export default function ArtisticTemplate({ data, editMode = false, onSave }: Art
         <div className="absolute bottom-20 right-1/3 w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-amber-300 to-orange-400 rounded-full opacity-20 blur-xl"></div>
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-8 py-8 sm:py-16">
+      <div className="relative w-full max-w-6xl mx-auto px-2 sm:px-8 py-6 sm:py-16">
         {/* Artistic Header */}
         <BlurFade delay={0.1}>
-          <div className="text-center mb-12 sm:mb-20 relative">
+          <div className="text-center mb-8 sm:mb-20 relative">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-rose-200/30 to-transparent h-px top-1/2 transform -translate-y-1/2"></div>
 
             <div className="relative bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950 dark:to-orange-950 rounded-full w-24 h-24 sm:w-40 sm:h-40 mx-auto mb-6 sm:mb-8 flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-2xl">

@@ -1,0 +1,50 @@
+{
+    name: "Free",
+    price: 0,
+    description: "Ideal for beginners creating a single portfolio.",
+    features: [
+      "Create 1 portfolio",
+      "Basic templates",
+      "Shareable link (e.g., /share/abc123)",
+      "Portify branding"
+    ],
+    limits: {
+      maxPortfolios: 1,
+      subdomainDeployment: false,
+      codeExport: false,
+      brandingRemoval: false
+    }
+  }
+{
+  name: "Standard",
+  price: 199,
+  description: "For creators who want more control and visibility.",
+  features: [
+    "Create up to 5 portfolios",
+    "Subdomain deployment (yourname.portfoliobuilder.app)",
+    "More template choices",
+    "Remove Portify branding"
+  ],
+  limits: {
+    maxPortfolios: 5,
+    subdomainDeployment: true,
+    codeExport: false,
+    brandingRemoval: true
+  }
+}
+{
+  name: "Pro",
+  price: 299,
+  description: "Full access to all features, for serious devs and freelancers.",
+  features: [
+    "Unlimited portfolios",
+    "Subdomain",
+    "Premium templates",
+    "No Portify branding",
+  ],
+  limits: {
+    maxPortfolios: Infinity,
+    subdomainDeployment: true,
+    brandingRemoval: true
+  }
+}

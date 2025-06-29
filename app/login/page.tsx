@@ -18,7 +18,7 @@ export default function LoginPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user)
-        router.push("/upload")
+        router.push("/dashboard")
       }
     })
 
@@ -27,7 +27,7 @@ export default function LoginPage() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user)
-        router.push("/upload")
+        router.push("/dashboard")
       }
     })
 
@@ -97,7 +97,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/upload`,
+          redirectTo: `${window.location.origin}/dashboard`,
         },
       })
 

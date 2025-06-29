@@ -73,6 +73,15 @@ const templates = [
     accent: "slate",
     isPro: true,
   },
+  {
+    id: "premium",
+    name: "Premium",
+    description: "Ultimate glassmorphism design with animated elements",
+    features: ["Glassmorphism", "Animated Backgrounds", "Premium Effects"],
+    style: "premium",
+    accent: "purple",
+    isPro: true,
+  },
 ]
 
 const TemplatePreview = ({ template, isSelected }: { template: any; isSelected: boolean }) => {
@@ -222,6 +231,54 @@ const TemplatePreview = ({ template, isSelected }: { template: any; isSelected: 
             <div className="flex gap-1 mt-3">
               <div className="w-8 h-4 bg-green-100 dark:bg-green-900 rounded-sm border border-green-200 dark:border-green-800"></div>
               <div className="w-6 h-4 bg-gray-100 dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700"></div>
+            </div>
+          </div>
+        )
+      case "premium":
+        return (
+          <div className="w-full h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 relative overflow-hidden">
+            {/* Animated background elements */}
+            <div className="absolute inset-0">
+              <div className="absolute top-0 -left-2 w-16 h-16 bg-purple-500 rounded-full mix-blend-multiply filter blur-lg opacity-30 animate-pulse"></div>
+              <div className="absolute top-0 -right-2 w-16 h-16 bg-yellow-500 rounded-full mix-blend-multiply filter blur-lg opacity-30 animate-pulse animation-delay-1000"></div>
+              <div className="absolute -bottom-2 left-4 w-16 h-16 bg-pink-500 rounded-full mix-blend-multiply filter blur-lg opacity-30 animate-pulse animation-delay-2000"></div>
+            </div>
+            
+            {/* Floating particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-white rounded-full opacity-20 animate-pulse"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 2}s`
+                  }}
+                />
+              ))}
+            </div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 rounded-full blur-sm opacity-30 animate-pulse"></div>
+                  <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-yellow-600 border-2 border-white/20"></div>
+                </div>
+                <div className="space-y-1">
+                  <div className="w-16 h-2 bg-white/20 backdrop-blur-sm rounded"></div>
+                  <div className="w-12 h-1.5 bg-purple-300/30 backdrop-blur-sm rounded"></div>
+                </div>
+              </div>
+              <div className="space-y-2 flex-1">
+                <div className="w-full h-1.5 bg-white/10 backdrop-blur-sm rounded"></div>
+                <div className="w-3/4 h-1.5 bg-purple-300/20 backdrop-blur-sm rounded"></div>
+                <div className="w-1/2 h-1.5 bg-pink-300/20 backdrop-blur-sm rounded"></div>
+              </div>
+              <div className="flex gap-1 mt-3">
+                <div className="w-8 h-4 bg-gradient-to-r from-purple-500/50 to-pink-500/50 backdrop-blur-sm rounded-sm border border-white/20"></div>
+                <div className="w-6 h-4 bg-gradient-to-r from-pink-500/50 to-yellow-500/50 backdrop-blur-sm rounded-sm border border-white/20"></div>
+              </div>
             </div>
           </div>
         )

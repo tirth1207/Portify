@@ -48,12 +48,12 @@ export default function ProfessionalTemplate({ data, editMode = false, onSave }:
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="w-full max-w-5xl mx-auto px-2 sm:px-6 py-6 sm:py-12">
         {/* Professional Header */}
         <BlurFade delay={0.1}>
-          <Card className="mb-6 sm:mb-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-            <CardContent className="p-6 sm:p-8">
-              <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
+          <Card className="mb-4 sm:mb-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+            <CardContent className="p-4 sm:p-8">
+              <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-8">
                 <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-gray-200 dark:border-slate-600">
                   <AvatarImage src="/placeholder.svg?height=128&width=128" alt={`${data.name} avatar`} />
                   <AvatarFallback className="text-xl sm:text-2xl font-bold bg-gray-600 text-white">
@@ -139,9 +139,9 @@ export default function ProfessionalTemplate({ data, editMode = false, onSave }:
           </Card>
         </BlurFade>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-8">
             {/* Experience */}
             {data.experience && data.experience.length > 0 && (
               <BlurFade delay={0.2}>
@@ -207,7 +207,7 @@ export default function ProfessionalTemplate({ data, editMode = false, onSave }:
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 sm:space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             {/* Skills */}
             {data.skills && data.skills.length > 0 && (
               <BlurFade delay={0.4}>

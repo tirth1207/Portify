@@ -8,6 +8,7 @@ import ProfessionalTemplate from "@/components/templates/ProfessionalTemplate"
 import TechTemplate from "@/components/templates/TechTemplate"
 import ExecutiveTemplate from "@/components/templates/ExecutiveTemplate"
 import ArtisticTemplate from "@/components/templates/ArtisticTemplate"
+import PremiumTemplate from "@/components/templates/PremiumTemplate";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,7 +37,7 @@ export default async function SubdomainPage({ params }: PageProps) {
     .from("portfolios")
     .select("*")
     .eq("subdomain", subdomain)
-    .eq("is_deployed", "TRUE")
+    .eq("is_deployed", true)
     .single();
 
   // Debug: Log query result and error
@@ -52,19 +53,18 @@ export default async function SubdomainPage({ params }: PageProps) {
     name: portfolio.name,
     title: portfolio.title || portfolio.name,
     summary: portfolio.summary || "",
+    contact: portfolio.contact || {},
     skills: portfolio.skills || [],
     projects: portfolio.projects || [],
     education: portfolio.education || [],
     experience: portfolio.experience || [],
-    contact: portfolio.contact || {
-      email: "",
-      phone: "",
-      location: "",
-      linkedin: "",
-      github: "",
-      twitter: "",
-      website: ""
-    }
+    certifications: portfolio.certifications || [],
+    awards: portfolio.awards || [],
+    languages: portfolio.languages || [],
+    interests: portfolio.interests || [],
+    volunteer: portfolio.volunteer || [],
+    publications: portfolio.publications || [],
+    patents: portfolio.patents || [],
   };
 
   const props = { data: portfolioData, editMode: false };
@@ -78,6 +78,7 @@ export default async function SubdomainPage({ params }: PageProps) {
     executive: ExecutiveTemplate,
     artistic: ArtisticTemplate,
     portfolio: PortfolioTemplate,
+    premium: PremiumTemplate,
   };
 
   const templateKey = typeof portfolio.template === "string"

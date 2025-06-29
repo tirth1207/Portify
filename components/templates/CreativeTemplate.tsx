@@ -47,13 +47,13 @@ export default function CreativeTemplate({ data, editMode = false, onSave }: Cre
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 py-6 sm:py-12">
         {/* Creative Hero Section */}
         <BlurFade delay={0.1}>
-          <div className="relative mb-12 sm:mb-20">
+          <div className="relative mb-8 sm:mb-20">
             <div className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-500 to-indigo-600 rounded-2xl sm:rounded-3xl transform rotate-1"></div>
-            <div className="relative bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-12 shadow-2xl">
-              <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-12">
+            <div className="relative bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-12 shadow-2xl">
+              <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-12">
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 rounded-full blur-lg opacity-30"></div>
                   <Avatar className="w-24 h-24 sm:w-40 sm:h-40 border-4 border-white shadow-xl relative">
@@ -147,11 +147,11 @@ export default function CreativeTemplate({ data, editMode = false, onSave }: Cre
         {/* Creative Skills Grid */}
         {data.skills && data.skills.length > 0 && (
           <BlurFade delay={0.2}>
-            <div className="mb-12 sm:mb-20">
-              <h2 className="text-3xl sm:text-4xl font-black text-center mb-8 sm:mb-12 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+            <div className="mb-8 sm:mb-20">
+              <h2 className="text-2xl sm:text-4xl font-black text-center mb-6 sm:mb-12 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
                 Creative Arsenal
               </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
                 {data.skills.map((skill, index) => (
                   <div
                     key={index}
@@ -174,8 +174,8 @@ export default function CreativeTemplate({ data, editMode = false, onSave }: Cre
         {/* Experience Timeline */}
         {data.experience && data.experience.length > 0 && (
           <BlurFade delay={0.3}>
-            <div className="mb-12 sm:mb-20">
-              <h2 className="text-3xl sm:text-4xl font-black text-center mb-8 sm:mb-12 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <div className="mb-8 sm:mb-20">
+              <h2 className="text-2xl sm:text-4xl font-black text-center mb-6 sm:mb-12 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                 Journey So Far
               </h2>
               <div className="relative">
@@ -183,9 +183,9 @@ export default function CreativeTemplate({ data, editMode = false, onSave }: Cre
                 {data.experience.map((exp, index) => (
                   <div
                     key={index}
-                    className={`flex items-center mb-8 sm:mb-12 ${index % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}
+                    className={`flex flex-col sm:flex-row items-center mb-6 sm:mb-12 ${index % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"}`}
                   >
-                    <div className={`w-full sm:w-1/2 ${index % 2 === 0 ? "sm:pr-8 sm:text-right" : "sm:pl-8 sm:text-left"}`}>
+                    <div className={`w-full sm:w-1/2 ${index % 2 === 0 ? "sm:pr-4 sm:text-right" : "sm:pl-4 sm:text-left"}`}>
                       <Card className="bg-white dark:bg-slate-800 shadow-xl border-0 transform hover:scale-105 transition-transform">
                         <CardContent className="p-4 sm:p-6">
                           <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">{exp.role}</h3>
@@ -213,11 +213,11 @@ export default function CreativeTemplate({ data, editMode = false, onSave }: Cre
         {/* Projects Showcase */}
         {data.projects && data.projects.length > 0 && (
           <BlurFade delay={0.4}>
-            <div className="mb-12 sm:mb-20">
-              <h2 className="text-3xl sm:text-4xl font-black text-center mb-8 sm:mb-12 bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
+            <div className="mb-8 sm:mb-20">
+              <h2 className="text-2xl sm:text-4xl font-black text-center mb-6 sm:mb-12 bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
                 Creative Projects
               </h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {data.projects.map((project, index) => (
                   <Card
                     key={index}

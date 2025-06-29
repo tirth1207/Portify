@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const { portfolioData, template } = await req.json()
 
     const portfolioId = Math.random().toString(36).substr(2, 9) + Date.now().toString(36)
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+    const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) // 1 day
 
     const { data, error } = await supabase
       .from("shared_portfolios")

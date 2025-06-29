@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Share, ArrowLeft, Copy, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import PortfolioTemplate from "@/components/templates/PortfolioTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import CreativeTemplate from "@/components/templates/CreativeTemplate"
@@ -13,6 +14,7 @@ import MinimalTemplate from "@/components/templates/MinimalTemplate"
 import TechTemplate from "@/components/templates/TechTemplate"
 import ArtisticTemplate from "@/components/templates/ArtisticTemplate"
 import ExecutiveTemplate from "@/components/templates/ExecutiveTemplate"
+import PremiumTemplate from "@/components/templates/PremiumTemplate"
 import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
@@ -30,14 +32,64 @@ export default function PortfolioPage() {
   const [shareUrl, setShareUrl] = useState("")
   const [isSharing, setIsSharing] = useState(false)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    const storedResume = localStorage.getItem("parsedResume")
-    const selected = localStorage.getItem("selectedTemplate")
-    if (storedResume) setResume(JSON.parse(storedResume))
-    if (selected) setTemplate(selected)
-  }, [])
+    const loadPortfolioData = async () => {
+      const portfolioId = searchParams.get("id")
+      
+      if (portfolioId) {
+        // Load from API
+        try {
+          const response = await fetch(`/api/portfolio/${portfolioId}`)
+          const result = await response.json()
+          
+          if (result.success && result.data) {
+            const portfolioData = {
+              name: result.data.name,
+              title: result.data.title,
+              summary: result.data.summary,
+              contact: result.data.contact || {},
+              skills: result.data.skills || [],
+              projects: result.data.projects || [],
+              education: result.data.education || [],
+              experience: result.data.experience || [],
+              certifications: result.data.certifications || [],
+              awards: result.data.awards || [],
+              languages: result.data.languages || [],
+              interests: result.data.interests || [],
+              volunteer: result.data.volunteer || [],
+              publications: result.data.publications || [],
+              patents: result.data.patents || [],
+            }
+            setResume(portfolioData)
+            setTemplate(result.data.template || "minimal")
+          } else {
+            throw new Error("Failed to load portfolio")
+          }
+        } catch (error) {
+          console.error("Error loading portfolio:", error)
+          toast({
+            title: "Error loading portfolio",
+            description: "Please try again.",
+            variant: "destructive",
+          })
+        }
+      } else {
+        // Load from localStorage (existing behavior)
+        const storedResume = localStorage.getItem("parsedResume")
+        const selected = localStorage.getItem("selectedTemplate")
+        if (storedResume) setResume(JSON.parse(storedResume))
+        if (selected) setTemplate(selected)
+      }
+      
+      setLoading(false)
+    }
+
+    loadPortfolioData()
+  }, [searchParams, toast])
 
   const handleSave = (updatedData: any) => {
     setResume(updatedData)
@@ -93,7 +145,7 @@ export default function PortfolioPage() {
     window.open(shareUrl, "_blank")
   }
 
-  if (!resume) {
+  if (loading || !resume) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -122,6 +174,8 @@ export default function PortfolioPage() {
         return <ArtisticTemplate {...props} />
       case "executive":
         return <ExecutiveTemplate {...props} />
+      case "premium":
+        return <PremiumTemplate {...props} />
       default:
         return <PortfolioTemplate {...props} />
     }
@@ -131,7 +185,7 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Floating Action Bar */}
       <div className="fixed top-6 left-6 right-6 z-50 flex justify-between items-center bg-white dark:bg-slate-800 rounded-full shadow-lg border px-6 py-3">
-        <Link href="/onboarding">
+        <Link href={searchParams.get("id") ? "/dashboard" : "/onboarding"}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
@@ -203,7 +257,11 @@ export default function PortfolioPage() {
           </Dialog>
 
           <ProFeatureGate feature="deploy">
-            <DeployButton portfolioData={resume} selectedTemplate={template} />
+            <DeployButton 
+              portfolioData={resume} 
+              selectedTemplate={template} 
+              portfolioId={searchParams.get('id') || undefined}
+            />
           </ProFeatureGate>
         </div>
       </div>

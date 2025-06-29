@@ -48,12 +48,12 @@ export default function ExecutiveTemplate({ data, editMode = false, onSave }: Ex
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-16">
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-8 py-6 sm:py-16">
         {/* Executive Header */}
         <BlurFade delay={0.1}>
-          <Card className="mb-8 sm:mb-12 bg-white dark:bg-slate-800 shadow-2xl border-0 rounded-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 sm:p-12">
-              <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-12">
+          <Card className="mb-4 sm:mb-12 bg-white dark:bg-slate-800 shadow-2xl border-0 rounded-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4 sm:p-12">
+              <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-12">
                 <Avatar className="w-24 h-24 sm:w-40 sm:h-40 border-4 border-white shadow-2xl">
                   <AvatarImage src="/placeholder.svg?height=160&width=160" alt={`${data.name} avatar`} />
                   <AvatarFallback className="text-2xl sm:text-4xl font-bold bg-gradient-to-br from-slate-600 to-slate-800 text-white">

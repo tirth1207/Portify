@@ -38,13 +38,13 @@ interface PortfolioTemplateProps {
 export default function PortfolioTemplate({ data, editMode = false, onSave }: PortfolioTemplateProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 py-6 sm:py-12">
         {/* Hero Section */}
         <BlurFade delay={0.1}>
-          <div className="text-center mb-16">
-            <div className="relative inline-block mb-8">
+          <div className="text-center mb-8 sm:mb-16">
+            <div className="relative inline-block mb-6 sm:mb-8">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full blur-xl opacity-30"></div>
-              <Avatar className="w-32 h-32 border-4 border-white shadow-2xl relative">
+              <Avatar className="w-20 h-20 sm:w-32 sm:h-32 border-4 border-white shadow-2xl relative">
                 <AvatarImage src="/placeholder.svg?height=128&width=128" />
                 <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
                   {data.name
@@ -54,11 +54,9 @@ export default function PortfolioTemplate({ data, editMode = false, onSave }: Po
                 </AvatarFallback>
               </Avatar>
             </div>
-
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">{data.name}</h1>
-            <h2 className="text-xl text-blue-600 dark:text-blue-400 font-medium mb-6">{data.title}</h2>
-            
-            <div className="flex justify-center items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+            <h1 className="text-2xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">{data.name}</h1>
+            <h2 className="text-base sm:text-xl text-blue-600 dark:text-blue-400 font-medium mb-4 sm:mb-6">{data.title}</h2>
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-2 sm:gap-6 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
                 <span>hello@example.com</span>

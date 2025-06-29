@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     // 3. Set up SSL certificates
     // 4. Store deployment info in database
 
-    // Save portfolio to database
+    // Save portfolio to database with all fields
     const { data: portfolio, error: dbError } = await supabase
       .from("portfolios")
       .upsert({
@@ -102,14 +102,23 @@ export async function POST(req: NextRequest) {
         name: portfolioData.name,
         title: portfolioData.title || portfolioData.name,
         summary: portfolioData.summary || "",
+        contact: portfolioData.contact || {},
         skills: portfolioData.skills || [],
         projects: portfolioData.projects || [],
         education: portfolioData.education || [],
         experience: portfolioData.experience || [],
+        certifications: portfolioData.certifications || [],
+        awards: portfolioData.awards || [],
+        languages: portfolioData.languages || [],
+        interests: portfolioData.interests || [],
+        volunteer: portfolioData.volunteer || [],
+        publications: portfolioData.publications || [],
+        patents: portfolioData.patents || [],
         template: selectedTemplate,
         subdomain: customSubdomain,
         deployment_url: deploymentUrl,
         is_deployed: true,
+        is_exported: false,
         updated_at: new Date().toISOString(),
       })
       .select()

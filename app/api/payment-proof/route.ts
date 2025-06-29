@@ -9,7 +9,7 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, transactionId, plan, amount } = await req.json()
+    const { name, email, transactionId, amount } = await req.json()
 
     // Validate required fields
     if (!name || !email || !transactionId) {
@@ -40,8 +40,7 @@ export async function POST(req: NextRequest) {
         email,
         transaction_id: transactionId,
         user_id: userId,
-        plan: plan || "Pro", // Default to Pro for backward compatibility
-        amount: amount || 299, // Default amount for backward compatibility
+        amount: amount || 299, // Default amount
         status: "pending",
         created_at: new Date().toISOString(),
       },

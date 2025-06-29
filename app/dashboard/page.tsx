@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, ExternalLink, Edit, Trash2, Crown, AlertCircle } from "lucide-react"
+import { Plus, ExternalLink, Edit, Trash2, Crown, AlertCircle, Eye, Share, Copy } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
@@ -12,6 +12,14 @@ import PlanStatus from "@/components/PlanStatus"
 import { canCreatePortfolio } from "@/lib/subscription-client"
 import UpgradeModal from "@/components/UpgradeModal"
 import Navigation from "@/components/Navigation"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface Portfolio {
   id: string
@@ -23,12 +31,29 @@ interface Portfolio {
   subdomain: string | null
   created_at: string
   updated_at: string
+  summary: string
+  contact: Record<string, any>
+  skills: string[]
+  projects: any[]
+  education: any[]
+  experience: any[]
+  certifications: any[]
+  awards: any[]
+  languages: string[]
+  interests: string[]
+  volunteer: any[]
+  publications: any[]
+  patents: any[]
 }
 
 export default function DashboardPage() {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([])
   const [loading, setLoading] = useState(true)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null)
+  const [shareUrl, setShareUrl] = useState("")
+  const [isGeneratingShare, setIsGeneratingShare] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -116,6 +141,111 @@ export default function DashboardPage() {
         variant: "destructive",
       })
     }
+  }
+
+  const handleSharePortfolio = async (portfolio: Portfolio) => {
+    setSelectedPortfolio(portfolio)
+    setShareDialogOpen(true)
+    setShareUrl("")
+    setIsGeneratingShare(true)
+
+    try {
+      // Get portfolio data from database
+      const { data: portfolioData, error } = await supabase
+        .from("portfolios")
+        .select("*")
+        .eq("id", portfolio.id)
+        .single()
+
+      if (error) throw error
+
+      // Generate share link with all fields
+      const response = await fetch("/api/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          portfolioData: {
+            name: portfolioData.name,
+            title: portfolioData.title,
+            summary: portfolioData.summary,
+            contact: portfolioData.contact || {},
+            skills: portfolioData.skills || [],
+            projects: portfolioData.projects || [],
+            education: portfolioData.education || [],
+            experience: portfolioData.experience || [],
+            certifications: portfolioData.certifications || [],
+            awards: portfolioData.awards || [],
+            languages: portfolioData.languages || [],
+            interests: portfolioData.interests || [],
+            volunteer: portfolioData.volunteer || [],
+            publications: portfolioData.publications || [],
+            patents: portfolioData.patents || [],
+          },
+          template: portfolioData.template,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setShareUrl(result.shareUrl)
+        toast({
+          title: "Share link generated! 🚀",
+          description: "Your portfolio is now ready to share with anyone.",
+        })
+      } else {
+        throw new Error(result.error || "Failed to generate share link")
+      }
+    } catch (error) {
+      console.error("Error generating share link:", error)
+      toast({
+        title: "Error generating share link",
+        description: "Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsGeneratingShare(false)
+    }
+  }
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl)
+    toast({
+      title: "Copied! 📋",
+      description: "Share link copied to clipboard",
+    })
+  }
+
+  const openInNewTab = () => {
+    window.open(shareUrl, "_blank")
+  }
+
+  const viewPortfolio = (portfolio: Portfolio) => {
+    // Store portfolio data in localStorage for the portfolio page
+    const portfolioData = {
+      name: portfolio.name,
+      title: portfolio.title,
+      summary: portfolio.summary || "",
+      contact: portfolio.contact || {},
+      skills: portfolio.skills || [],
+      projects: portfolio.projects || [],
+      education: portfolio.education || [],
+      experience: portfolio.experience || [],
+      certifications: portfolio.certifications || [],
+      awards: portfolio.awards || [],
+      languages: portfolio.languages || [],
+      interests: portfolio.interests || [],
+      volunteer: portfolio.volunteer || [],
+      publications: portfolio.publications || [],
+      patents: portfolio.patents || [],
+    }
+    localStorage.setItem("parsedResume", JSON.stringify(portfolioData))
+    localStorage.setItem("selectedTemplate", portfolio.template)
+    
+    // Navigate to portfolio page
+    window.open(`/portfolio?id=${portfolio.id}`, "_blank")
   }
 
   const getTemplateBadgeColor = (template: string) => {
@@ -251,10 +381,27 @@ export default function DashboardPage() {
                       )}
 
                       <div className="flex items-center gap-2 pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => viewPortfolio(portfolio)}
+                          className="flex-1"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSharePortfolio(portfolio)}
+                        >
+                          <Share className="h-4 w-4" />
+                        </Button>
+                        
                         <Link href={`/portfolio?id=${portfolio.id}`}>
-                          <Button variant="outline" size="sm" className="flex-1">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </Link>
                         
@@ -303,6 +450,69 @@ export default function DashboardPage() {
           fetchPortfolios()
         }}
       />
+
+      {/* Share Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share Portfolio</DialogTitle>
+            <DialogDescription>
+              Generate a unique link to share your portfolio with anyone, anywhere.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isGeneratingShare ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Generating share link...</p>
+            </div>
+          ) : shareUrl ? (
+            <div className="space-y-4">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="text-sm font-medium mb-2">Your portfolio link:</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-sm bg-white dark:bg-gray-900 p-2 rounded border break-all">
+                    {shareUrl}
+                  </code>
+                  <Button size="sm" variant="outline" onClick={copyToClipboard}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={openInNewTab} className="flex-1">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Preview
+                </Button>
+                <Button variant="outline" onClick={copyToClipboard} className="flex-1">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Link
+                </Button>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-3">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  ✨ This link works anywhere! Share it via email, social media, or messaging apps. Anyone with the
+                  link can view your portfolio.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="mb-4">
+                <Share className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Create a shareable link that works on any device
+                </p>
+              </div>
+              <Button onClick={() => selectedPortfolio && handleSharePortfolio(selectedPortfolio)} disabled={isGeneratingShare}>
+                {isGeneratingShare ? "Generating..." : "Generate Share Link"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
