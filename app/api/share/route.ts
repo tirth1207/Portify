@@ -6,10 +6,54 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Define which templates are pro templates
+const proTemplates = ["creative", "tech", "artistic", "executive", "premium"]
+
+// Function to check if user can use pro templates
+async function canUserUseProTemplates(userId: string): Promise<boolean> {
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", userId)
+      .single()
+
+    const tier = profile?.subscription_tier || "free"
+    return tier === "pro" || tier === "standard"
+  } catch (error) {
+    console.error("Error checking user subscription:", error)
+    return false
+  }
+}
+
 // API route to handle portfolio sharing
 export async function POST(req: NextRequest) {
   try {
     const { portfolioData, template } = await req.json()
+
+    // Get user from request (you might need to adjust this based on your auth setup)
+    const authHeader = req.headers.get("authorization")
+    if (!authHeader) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
+    }
+
+    // Extract user ID from auth header (adjust based on your auth implementation)
+    const token = authHeader.replace("Bearer ", "")
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: "Invalid authentication" }, { status: 401 })
+    }
+
+    // Check if user is trying to share a pro template without access
+    if (proTemplates.includes(template)) {
+      const canUsePro = await canUserUseProTemplates(user.id)
+      if (!canUsePro) {
+        return NextResponse.json({ 
+          error: "Access denied. Pro templates require Standard or Pro subscription." 
+        }, { status: 403 })
+      }
+    }
 
     // Generate a unique ID
     const portfolioId = Math.random().toString(36).substr(2, 9) + Date.now().toString(36)

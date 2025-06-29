@@ -140,6 +140,17 @@ export async function canRemoveBranding(): Promise<boolean> {
   }
 }
 
+export async function canUseProTemplates(): Promise<boolean> {
+  try {
+    const userPlan = await getUserPlan()
+    // Only Pro and Standard plans can use pro templates
+    return userPlan.name === "Pro" || userPlan.name === "Standard"
+  } catch (error) {
+    console.error("Error checking pro template access:", error)
+    return false
+  }
+}
+
 // Export feature was removed, but keeping this function for compatibility
 export async function canExportCode(): Promise<boolean> {
   return false // Export feature is no longer available

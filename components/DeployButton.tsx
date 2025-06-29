@@ -74,7 +74,7 @@ export default function DeployButton({ portfolioData, selectedTemplate, portfoli
     )
   }
 
-  if (isDeployed && deploymentUrl) {
+  if (isDeployed) {
     return (
       <Button
         onClick={openDeployment}

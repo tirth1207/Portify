@@ -25,6 +25,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import ProFeatureGate from "@/components/ProFeatureGate"
+import { canUseProTemplates } from "@/lib/subscription-client"
+import { supabase } from "@/lib/supabase"
 
 function PortfolioContent() {
   const [resume, setResume] = useState<any>(null)
@@ -33,17 +35,38 @@ function PortfolioContent() {
   const [isSharing, setIsSharing] = useState(false)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [canUsePro, setCanUsePro] = useState(false)
   const { toast } = useToast()
   const searchParams = useSearchParams()
+
+  // Define which templates are pro templates
+  const proTemplates = ["creative", "tech", "artistic", "executive", "premium"]
 
   useEffect(() => {
     const loadPortfolioData = async () => {
       const portfolioId = searchParams.get("id")
       
+      // Check if user can use pro templates
+      try {
+        const canUseProResult = await canUseProTemplates()
+        setCanUsePro(canUseProResult)
+      } catch (error) {
+        console.error("Error checking pro template access:", error)
+        setCanUsePro(false)
+      }
+      
       if (portfolioId) {
         // Load from API
         try {
-          const response = await fetch(`/api/portfolio/${portfolioId}`)
+          // Get the current user's session token
+          const { data: { session } } = await supabase.auth.getSession()
+          const token = session?.access_token
+
+          const response = await fetch(`/api/portfolio/${portfolioId}`, {
+            headers: {
+              ...(token && { "Authorization": `Bearer ${token}` })
+            }
+          })
           const result = await response.json()
           
           if (result.success && result.data) {
@@ -65,7 +88,20 @@ function PortfolioContent() {
               patents: result.data.patents || [],
             }
             setResume(portfolioData)
-            setTemplate(result.data.template || "minimal")
+            
+            // Check if the template is a pro template and user doesn't have access
+            const selectedTemplate = result.data.template || "minimal"
+            if (proTemplates.includes(selectedTemplate) && !canUsePro) {
+              toast({
+                title: "Pro Template Access Denied",
+                description: "You need to upgrade to Standard or Pro plan to use this template.",
+                variant: "destructive",
+              })
+              // Redirect to onboarding to choose a different template
+              window.location.href = "/onboarding"
+              return
+            }
+            setTemplate(selectedTemplate)
           } else {
             throw new Error("Failed to load portfolio")
           }
@@ -82,7 +118,20 @@ function PortfolioContent() {
         const storedResume = localStorage.getItem("parsedResume")
         const selected = localStorage.getItem("selectedTemplate")
         if (storedResume) setResume(JSON.parse(storedResume))
-        if (selected) setTemplate(selected)
+        if (selected) {
+          // Check if the selected template is a pro template and user doesn't have access
+          if (proTemplates.includes(selected) && !canUsePro) {
+            toast({
+              title: "Pro Template Access Denied",
+              description: "You need to upgrade to Standard or Pro plan to use this template.",
+              variant: "destructive",
+            })
+            // Redirect to onboarding to choose a different template
+            window.location.href = "/onboarding"
+            return
+          }
+          setTemplate(selected)
+        }
       }
       
       setLoading(false)
@@ -99,10 +148,15 @@ function PortfolioContent() {
   const generateShareLink = async () => {
     setIsSharing(true)
     try {
+      // Get the current user's session token
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
       const response = await fetch("/api/share", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token && { "Authorization": `Bearer ${token}` })
         },
         body: JSON.stringify({
           portfolioData: resume,

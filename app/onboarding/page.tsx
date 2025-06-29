@@ -1,13 +1,16 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, ArrowRight } from "lucide-react"
+import { Check, ArrowRight, Lock } from "lucide-react"
 import BlurFade from "@/components/magicui/blur-fade"
 import ProBadge from "@/components/ProBadge"
+import { canUseProTemplates, getUserPlan } from "@/lib/subscription-client"
+import { useToast } from "@/hooks/use-toast"
+import Link from "next/link"
 
 const templates = [
   {
@@ -304,9 +307,40 @@ const TemplatePreview = ({ template, isSelected }: { template: any; isSelected: 
 export default function OnboardingPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("")
   const [hoveredTemplate, setHoveredTemplate] = useState<string>("")
+  const [canUsePro, setCanUsePro] = useState(false)
+  const [userPlan, setUserPlan] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const checkPlanAccess = async () => {
+      try {
+        const canUseProTemplatesResult = await canUseProTemplates()
+        const plan = await getUserPlan()
+        setCanUsePro(canUseProTemplatesResult)
+        setUserPlan(plan)
+      } catch (error) {
+        console.error("Error checking plan access:", error)
+        setCanUsePro(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkPlanAccess()
+  }, [])
 
   const handleSelect = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId)
+    if (template?.isPro && !canUsePro) {
+      toast({
+        title: "Pro Template Locked",
+        description: "Upgrade to Standard or Pro plan to access premium templates.",
+        variant: "destructive",
+      })
+      return
+    }
     setSelectedTemplate(templateId)
   }
 
@@ -326,104 +360,154 @@ export default function OnboardingPage() {
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
               Select a template that reflects your professional personality and industry
             </p>
-          </div>
-        </BlurFade>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-          {templates.map((template, index) => (
-            <BlurFade key={template.id} delay={0.2 + index * 0.1}>
-              <Card
-                className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl border-2 ${
-                  selectedTemplate === template.id
-                    ? "border-black dark:border-white shadow-xl scale-[1.02]"
-                    : "border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700"
-                } bg-white dark:bg-slate-900`}
-                onClick={() => handleSelect(template.id)}
-                onMouseEnter={() => setHoveredTemplate(template.id)}
-                onMouseLeave={() => setHoveredTemplate("")}
-              >
-                <CardContent className="p-8">
-                  <div className="space-y-6">
-                    {/* Template Preview */}
-                    <div className="relative">
-                      <TemplatePreview template={template} isSelected={selectedTemplate === template.id} />
-
-                      {/* Selection Indicator */}
-                      <div
-                        className={`absolute -top-2 -right-2 transition-all duration-300 ${
-                          selectedTemplate === template.id ? "scale-100 opacity-100" : "scale-0 opacity-0"
-                        }`}
-                      >
-                        <div className="bg-black dark:bg-white text-white dark:text-black rounded-full p-2 shadow-lg">
-                          <Check className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Template Info */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                          {template.name}
-                          {template.isPro && <ProBadge />}
-                        </h3>
-                        <div
-                          className={`transition-all duration-300 ${
-                            hoveredTemplate === template.id || selectedTemplate === template.id
-                              ? "translate-x-0 opacity-100"
-                              : "translate-x-2 opacity-0"
-                          }`}
-                        >
-                          <ArrowRight className="h-5 w-5 text-gray-400" />
-                        </div>
-                      </div>
-
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{template.description}</p>
-
-                      {/* Features */}
-                      <div className="flex flex-wrap gap-2">
-                        {template.features.map((feature, i) => (
-                          <Badge
-                            key={i}
-                            variant="secondary"
-                            className="text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0"
-                          >
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </BlurFade>
-          ))}
-        </div>
-
-        <BlurFade delay={0.6}>
-          <div className="text-center">
-            <Button
-              onClick={handleContinue}
-              disabled={!selectedTemplate}
-              size="lg"
-              className={`px-12 py-4 text-lg font-semibold transition-all duration-300 ${
-                selectedTemplate
-                  ? "bg-black hover:bg-gray-800 text-white shadow-lg hover:shadow-xl scale-100"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed scale-95"
-              }`}
-            >
-              Continue to Portfolio
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-
-            {selectedTemplate && (
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                You've selected the{" "}
-                <span className="font-semibold">{templates.find((t) => t.id === selectedTemplate)?.name}</span> template
-              </p>
+            {userPlan && (
+              <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">
+                <span className="text-gray-700 dark:text-gray-300">
+                  Current Plan: <span className="font-semibold">{userPlan.name}</span>
+                </span>
+                {!canUsePro && (
+                  <span className="text-yellow-600 dark:text-yellow-400">
+                    • Pro templates locked
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </BlurFade>
+
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading templates...</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+              {templates.map((template, index) => {
+                const isLocked = template.isPro && !canUsePro
+                return (
+                  <BlurFade key={template.id} delay={0.2 + index * 0.1}>
+                    <Card
+                      className={`group transition-all duration-500 border-2 ${
+                        isLocked 
+                          ? "cursor-not-allowed opacity-60 border-gray-200 dark:border-gray-700"
+                          : selectedTemplate === template.id
+                          ? "cursor-pointer border-black dark:border-white shadow-xl scale-[1.02] hover:shadow-2xl"
+                          : "cursor-pointer border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-2xl"
+                      } bg-white dark:bg-slate-900`}
+                      onClick={() => handleSelect(template.id)}
+                      onMouseEnter={() => !isLocked && setHoveredTemplate(template.id)}
+                      onMouseLeave={() => setHoveredTemplate("")}
+                    >
+                      <CardContent className="p-8">
+                        <div className="space-y-6">
+                          {/* Template Preview */}
+                          <div className="relative">
+                            <TemplatePreview template={template} isSelected={selectedTemplate === template.id} />
+
+                            {/* Selection Indicator */}
+                            <div
+                              className={`absolute -top-2 -right-2 transition-all duration-300 ${
+                                selectedTemplate === template.id ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                              }`}
+                            >
+                              <div className="bg-black dark:bg-white text-white dark:text-black rounded-full p-2 shadow-lg">
+                                <Check className="h-4 w-4" />
+                              </div>
+                            </div>
+
+                            {/* Locked Overlay */}
+                            {isLocked && (
+                              <div className="absolute inset-0 bg-black/20 dark:bg-black/40 flex items-center justify-center rounded-xl">
+                                <div className="bg-white dark:bg-slate-800 rounded-lg p-3 shadow-lg">
+                                  <Lock className="h-6 w-6 text-gray-500" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Template Info */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                {template.name}
+                                {template.isPro && <ProBadge />}
+                              </h3>
+                              <div
+                                className={`transition-all duration-300 ${
+                                  !isLocked && (hoveredTemplate === template.id || selectedTemplate === template.id)
+                                    ? "translate-x-0 opacity-100"
+                                    : "translate-x-2 opacity-0"
+                                }`}
+                              >
+                                <ArrowRight className="h-5 w-5 text-gray-400" />
+                              </div>
+                            </div>
+
+                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{template.description}</p>
+
+                            {/* Features */}
+                            <div className="flex flex-wrap gap-2">
+                              {template.features.map((feature, i) => (
+                                <Badge
+                                  key={i}
+                                  variant="secondary"
+                                  className="text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0"
+                                >
+                                  {feature}
+                                </Badge>
+                              ))}
+                            </div>
+
+                            {/* Locked Message */}
+                            {isLocked && (
+                              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                                <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
+                                  <Lock className="h-4 w-4 inline mr-1" />
+                                  Upgrade to Standard or Pro plan to unlock this template
+                                </p>
+                                <Link href="/pricing">
+                                  <Button size="sm" className="w-full bg-yellow-600 hover:bg-yellow-700 text-white">
+                                    View Plans
+                                  </Button>
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </BlurFade>
+                )
+              })}
+            </div>
+
+            <BlurFade delay={0.6}>
+              <div className="text-center">
+                <Button
+                  onClick={handleContinue}
+                  disabled={!selectedTemplate}
+                  size="lg"
+                  className={`px-12 py-4 text-lg font-semibold transition-all duration-300 ${
+                    selectedTemplate
+                      ? "bg-black hover:bg-gray-800 text-white shadow-lg hover:shadow-xl scale-100"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed scale-95"
+                  }`}
+                >
+                  Continue to Portfolio
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+
+                {selectedTemplate && (
+                  <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                    You've selected the{" "}
+                    <span className="font-semibold">{templates.find((t) => t.id === selectedTemplate)?.name}</span> template
+                  </p>
+                )}
+              </div>
+            </BlurFade>
+          </>
+        )}
       </div>
     </div>
   )
