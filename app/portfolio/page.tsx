@@ -70,7 +70,17 @@ function PortfolioContent() {
               ...(token && { "Authorization": `Bearer ${token}` })
             }
           })
+          
+          console.log("Debug - API response status:", response.status)
+          
+          if (!response.ok) {
+            const errorData = await response.json()
+            console.error("Debug - API error:", errorData)
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+          }
+          
           const result = await response.json()
+          console.log("Debug - API result:", result)
           
           if (result.success && result.data) {
             const portfolioData = {
