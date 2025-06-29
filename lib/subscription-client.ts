@@ -75,7 +75,9 @@ export async function getUserSubscriptionTier(): Promise<string> {
       .eq("id", user.id)
       .single()
 
-    return profile?.subscription_tier || "free"
+    const tier = profile?.subscription_tier || "free"
+    console.log("Debug - Subscription tier from DB:", tier)
+    return tier
   } catch (error) {
     console.error("Error getting user subscription tier:", error)
     return "free"
@@ -84,7 +86,13 @@ export async function getUserSubscriptionTier(): Promise<string> {
 
 export async function getUserPlan(): Promise<SubscriptionPlan> {
   const tier = await getUserSubscriptionTier()
-  return SUBSCRIPTION_PLANS.find(plan => plan.name.toLowerCase() === tier) || SUBSCRIPTION_PLANS[0]
+  // Convert tier to lowercase for case-insensitive comparison
+  const normalizedTier = tier.toLowerCase()
+  console.log("Debug - Normalized tier:", normalizedTier)
+  
+  const plan = SUBSCRIPTION_PLANS.find(plan => plan.name.toLowerCase() === normalizedTier) || SUBSCRIPTION_PLANS[0]
+  console.log("Debug - Found plan:", plan.name)
+  return plan
 }
 
 export async function canCreatePortfolio(): Promise<{ canCreate: boolean; reason?: string }> {
@@ -148,6 +156,47 @@ export async function canUseProTemplates(): Promise<boolean> {
   } catch (error) {
     console.error("Error checking pro template access:", error)
     return false
+  }
+}
+
+// Test function to verify subscription checking
+export async function testSubscriptionAccess(): Promise<{
+  user: any
+  subscriptionTier: string
+  userPlan: any
+  canUsePro: boolean
+  error?: string
+}> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return {
+        user: null,
+        subscriptionTier: "no-user",
+        userPlan: null,
+        canUsePro: false,
+        error: "No user found"
+      }
+    }
+
+    const subscriptionTier = await getUserSubscriptionTier()
+    const userPlan = await getUserPlan()
+    const canUsePro = await canUseProTemplates()
+
+    return {
+      user,
+      subscriptionTier,
+      userPlan,
+      canUsePro
+    }
+  } catch (error) {
+    return {
+      user: null,
+      subscriptionTier: "error",
+      userPlan: null,
+      canUsePro: false,
+      error: error instanceof Error ? error.message : "Unknown error"
+    }
   }
 }
 

@@ -36,6 +36,9 @@ function PortfolioContent() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [canUsePro, setCanUsePro] = useState(false)
+  const [portfolioId, setPortfolioId] = useState<string | null>(null)
+  const [isDeployed, setIsDeployed] = useState(false)
+  const [deploymentUrl, setDeploymentUrl] = useState("")
   const { toast } = useToast()
   const searchParams = useSearchParams()
 
@@ -88,19 +91,31 @@ function PortfolioContent() {
               patents: result.data.patents || [],
             }
             setResume(portfolioData)
+            setPortfolioId(portfolioId)
+            
+            // Set deployment status
+            setIsDeployed(result.data.is_deployed || false)
+            setDeploymentUrl(result.data.deployment_url || "")
+            
+            console.log("Debug - Portfolio loaded:", {
+              id: portfolioId,
+              isDeployed: result.data.is_deployed,
+              deploymentUrl: result.data.deployment_url,
+              template: result.data.template
+            })
             
             // Check if the template is a pro template and user doesn't have access
             const selectedTemplate = result.data.template || "minimal"
-            if (proTemplates.includes(selectedTemplate) && !canUsePro) {
-              toast({
-                title: "Pro Template Access Denied",
-                description: "You need to upgrade to Standard or Pro plan to use this template.",
-                variant: "destructive",
-              })
-              // Redirect to onboarding to choose a different template
-              window.location.href = "/onboarding"
-              return
-            }
+            // if (proTemplates.includes(selectedTemplate) && !canUsePro) {
+            //   toast({
+            //     title: "Pro Template Access Denied",
+            //     description: "You need to upgrade to Standard or Pro plan to use this template.",
+            //     variant: "destructive",
+            //   })
+            //   // Redirect to onboarding to choose a different template
+            //   window.location.href = "/onboarding"
+            //   return
+            // }
             setTemplate(selectedTemplate)
           } else {
             throw new Error("Failed to load portfolio")
@@ -120,7 +135,7 @@ function PortfolioContent() {
         if (storedResume) setResume(JSON.parse(storedResume))
         if (selected) {
           // Check if the selected template is a pro template and user doesn't have access
-          if (proTemplates.includes(selected) && !canUsePro) {
+          if (proTemplates.includes(selected) && canUsePro) {
             toast({
               title: "Pro Template Access Denied",
               description: "You need to upgrade to Standard or Pro plan to use this template.",
@@ -307,7 +322,9 @@ function PortfolioContent() {
             <DeployButton 
               portfolioData={resume} 
               selectedTemplate={template} 
-              portfolioId={searchParams.get('id') || undefined}
+              portfolioId={portfolioId || undefined}
+              isDeployed={isDeployed}
+              deploymentUrl={deploymentUrl}
             />
           </ProFeatureGate>
         </div>

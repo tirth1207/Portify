@@ -11,6 +11,7 @@ import ProBadge from "@/components/ProBadge"
 import { canUseProTemplates, getUserPlan } from "@/lib/subscription-client"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
+import { supabase } from "@/lib/supabase"
 
 const templates = [
   {
@@ -316,10 +317,52 @@ export default function OnboardingPage() {
   useEffect(() => {
     const checkPlanAccess = async () => {
       try {
-        const canUseProTemplatesResult = await canUseProTemplates()
-        const plan = await getUserPlan()
-        setCanUsePro(canUseProTemplatesResult)
+        console.log("Debug - Checking plan access...")
+        
+        // Get user first
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          console.log("Debug - No user found")
+          setCanUsePro(false)
+          setLoading(false)
+          return
+        }
+        
+        console.log("Debug - User found:", user.email)
+        
+        // Check plan access with retry
+        let canUseProResult = false
+        let plan = null
+        let retries = 3
+        
+        while (retries > 0) {
+          try {
+            canUseProResult = await canUseProTemplates()
+            plan = await getUserPlan()
+            console.log("Debug - canUsePro result:", canUseProResult)
+            console.log("Debug - user plan:", plan)
+            break
+          } catch (error) {
+            console.error("Debug - Error on attempt", 4 - retries, ":", error)
+            retries--
+            if (retries > 0) {
+              await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+            }
+          }
+        }
+        
+        setCanUsePro(canUseProResult)
         setUserPlan(plan)
+        
+        // Double-check by directly querying the database
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("subscription_tier")
+          .eq("id", user.id)
+          .single()
+        
+        console.log("Debug - Direct DB query subscription_tier:", profile?.subscription_tier)
+        
       } catch (error) {
         console.error("Error checking plan access:", error)
         setCanUsePro(false)
@@ -331,16 +374,43 @@ export default function OnboardingPage() {
     checkPlanAccess()
   }, [])
 
-  const handleSelect = (templateId: string) => {
+  const handleSelect = async (templateId: string) => {
     const template = templates.find(t => t.id === templateId)
-    if (template?.isPro && !canUsePro) {
-      toast({
-        title: "Pro Template Locked",
-        description: "Upgrade to Standard or Pro plan to access premium templates.",
-        variant: "destructive",
-      })
-      return
+    console.log("Debug - Template selected:", templateId)
+    console.log("Debug - Template isPro:", template?.isPro)
+    console.log("Debug - canUsePro:", canUsePro)
+    
+    if (template?.isPro) {
+      // Force refresh the plan check before blocking
+      console.log("Debug - Pro template selected, re-checking access...")
+      try {
+        const freshCanUsePro = await canUseProTemplates()
+        console.log("Debug - Fresh canUsePro check:", freshCanUsePro)
+        
+        if (!freshCanUsePro) {
+          console.log("Debug - Blocking pro template selection")
+          toast({
+            title: "Pro Template Locked",
+            description: "Upgrade to Standard or Pro plan to access premium templates.",
+            variant: "destructive",
+          })
+          return
+        } else {
+          console.log("Debug - Pro template access confirmed")
+          setCanUsePro(true) // Update state with fresh data
+        }
+      } catch (error) {
+        console.error("Debug - Error re-checking pro access:", error)
+        toast({
+          title: "Error checking plan access",
+          description: "Please try again.",
+          variant: "destructive",
+        })
+        return
+      }
     }
+    
+    console.log("Debug - Setting selected template:", templateId)
     setSelectedTemplate(templateId)
   }
 
@@ -370,6 +440,12 @@ export default function OnboardingPage() {
                     • Pro templates locked
                   </span>
                 )}
+                <button
+                  onClick={() => window.location.reload()}
+                  className="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                >
+                  Refresh
+                </button>
               </div>
             )}
           </div>

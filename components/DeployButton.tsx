@@ -10,26 +10,56 @@ interface DeployButtonProps {
   portfolioData: any
   selectedTemplate: string
   portfolioId?: string
+  isDeployed?: boolean
+  deploymentUrl?: string
 }
 
-export default function DeployButton({ portfolioData, selectedTemplate, portfolioId }: DeployButtonProps) {
+export default function DeployButton({ 
+  portfolioData, 
+  selectedTemplate, 
+  portfolioId,
+  isDeployed: propIsDeployed,
+  deploymentUrl: propDeploymentUrl
+}: DeployButtonProps) {
   const [showDeployDialog, setShowDeployDialog] = useState(false)
-  const [isDeployed, setIsDeployed] = useState(false)
-  const [deploymentUrl, setDeploymentUrl] = useState("")
-  const [loading, setLoading] = useState(true)
+  const [isDeployed, setIsDeployed] = useState(propIsDeployed || false)
+  const [deploymentUrl, setDeploymentUrl] = useState(propDeploymentUrl || "")
+  const [loading, setLoading] = useState(false) // Start with false since we have props
 
   useEffect(() => {
-    if (portfolioId) {
+    // Update state when props change
+    if (propIsDeployed !== undefined) {
+      setIsDeployed(propIsDeployed)
+    }
+    if (propDeploymentUrl !== undefined) {
+      setDeploymentUrl(propDeploymentUrl)
+    }
+    
+    console.log("Debug - DeployButton props:", {
+      portfolioId,
+      propIsDeployed,
+      propDeploymentUrl,
+      isDeployed,
+      deploymentUrl
+    })
+  }, [propIsDeployed, propDeploymentUrl, portfolioId, isDeployed, deploymentUrl])
+
+  useEffect(() => {
+    if (portfolioId && !propIsDeployed && !propDeploymentUrl) {
+      setLoading(true)
       checkDeploymentStatus()
     } else {
       setLoading(false)
     }
-  }, [portfolioId])
+  }, [portfolioId, propIsDeployed, propDeploymentUrl])
 
   const checkDeploymentStatus = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user || !portfolioId) return
+      if (!user || !portfolioId) {
+        setLoading(false)
+        return
+      }
 
       const { data: portfolio, error } = await supabase
         .from("portfolios")
@@ -38,12 +68,53 @@ export default function DeployButton({ portfolioData, selectedTemplate, portfoli
         .eq("user_id", user.id)
         .single()
 
-      if (!error && portfolio) {
-        setIsDeployed(portfolio.is_deployed || false)
-        setDeploymentUrl(portfolio.deployment_url || "")
+      if (error) {
+        console.error("Error fetching portfolio:", error)
+        // If portfolio not found, check if there's a deployment record
+        const { data: deployment } = await supabase
+          .from("deployments")
+          .select("deployment_url, status")
+          .eq("portfolio_id", portfolioId)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single()
+
+        if (deployment && deployment.status === "completed") {
+          setIsDeployed(true)
+          setDeploymentUrl(deployment.deployment_url || "")
+        } else {
+          setIsDeployed(false)
+          setDeploymentUrl("")
+        }
+      } else if (portfolio) {
+        // Check both portfolio.is_deployed and deployment status
+        const isDeployed = portfolio.is_deployed || false
+        const deploymentUrl = portfolio.deployment_url || ""
+        
+        // If portfolio shows deployed but no URL, check deployments table
+        if (isDeployed && !deploymentUrl) {
+          const { data: deployment } = await supabase
+            .from("deployments")
+            .select("deployment_url")
+            .eq("portfolio_id", portfolioId)
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single()
+
+          if (deployment?.deployment_url) {
+            setDeploymentUrl(deployment.deployment_url)
+          }
+        }
+        
+        setIsDeployed(isDeployed)
+        setDeploymentUrl(deploymentUrl)
       }
     } catch (error) {
       console.error("Error checking deployment status:", error)
+      setIsDeployed(false)
+      setDeploymentUrl("")
     } finally {
       setLoading(false)
     }
@@ -60,8 +131,9 @@ export default function DeployButton({ portfolioData, selectedTemplate, portfoli
   }
 
   const openDeployment = () => {
-    if (deploymentUrl) {
-      window.open(deploymentUrl, "_blank")
+    const url = deploymentUrl || propDeploymentUrl
+    if (url) {
+      window.open(url, "_blank")
     }
   }
 
@@ -74,7 +146,11 @@ export default function DeployButton({ portfolioData, selectedTemplate, portfoli
     )
   }
 
-  if (isDeployed) {
+  // Check if deployed (either from props or state)
+  const isCurrentlyDeployed = isDeployed || propIsDeployed
+  const currentDeploymentUrl = deploymentUrl || propDeploymentUrl
+
+  if (isCurrentlyDeployed && currentDeploymentUrl) {
     return (
       <Button
         onClick={openDeployment}
