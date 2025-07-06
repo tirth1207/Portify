@@ -1086,45 +1086,45 @@ export default function UserDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 p-2 sm:p-4 md:p-6">
+      <div className="w-full max-w-full md:max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link href="/upload">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Upload
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Tell Us About Yourself</h1>
-          <p className="text-gray-600 dark:text-gray-300">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Tell Us About Yourself</h1>
+          <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">
             Fill in your details to create a personalized portfolio. You can skip optional sections if you don't have that information yet.
           </p>
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 pb-2">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+              <div key={step.id} className="flex items-center min-w-[60px]">
+                <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
                   currentStep >= step.id 
                     ? "bg-blue-600 border-blue-600 text-white" 
                     : "border-gray-300 dark:border-gray-600 text-gray-500"
                 }`}>
-                  <step.icon className="h-5 w-5" />
+                  <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-2 ${
+                  <div className={`w-8 sm:w-16 h-0.5 mx-1 sm:mx-2 ${
                     currentStep > step.id ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
                   }`} />
                 )}
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-2">
+          <div className="flex justify-between mt-2 text-xs sm:text-xs md:text-sm overflow-x-auto">
             {steps.map((step) => (
-              <span key={step.id} className={`text-xs ${
+              <span key={step.id} className={`min-w-[60px] ${
                 currentStep >= step.id ? "text-blue-600" : "text-gray-500"
               }`}>
                 {step.title}
@@ -1135,16 +1135,17 @@ export default function UserDetailsPage() {
         </div>
 
         {/* Step Content */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           {renderStep()}
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between">
           <Button
             variant="outline"
             onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
             disabled={currentStep === 1}
+            className="w-full sm:w-auto"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Previous
@@ -1154,6 +1155,7 @@ export default function UserDetailsPage() {
             <Button
               onClick={() => setCurrentStep(prev => prev + 1)}
               disabled={currentStep === steps.length}
+              className="w-full sm:w-auto"
             >
               Next
               <ArrowRight className="h-4 w-4 ml-2" />
@@ -1162,7 +1164,7 @@ export default function UserDetailsPage() {
             <Button
               onClick={handleSubmit}
               disabled={loading || !userData.name}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
             >
               {loading ? (
                 <>
