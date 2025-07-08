@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import BlurFade from "@/components/magicui/blur-fade"
 import { Mail, Phone, MapPin, Globe, Linkedin, Github } from "lucide-react"
+import { useTheme } from "next-themes"
 
 type Resume = {
   name: string
@@ -43,6 +44,7 @@ interface CreativeTemplateProps {
 }
 
 export default function CreativeTemplate({ data, editMode = false, onSave }: CreativeTemplateProps) {
+  const { theme, resolvedTheme } = useTheme();
   const contact = data.contact || {}
   
   return (

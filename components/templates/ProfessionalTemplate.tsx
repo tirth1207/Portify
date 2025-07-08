@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import BlurFade from "@/components/magicui/blur-fade"
 import { Mail, Phone, MapPin, Globe, Linkedin, Github } from "lucide-react"
+import { useTheme } from "next-themes"
 
 type Resume = {
   name: string
@@ -44,6 +45,7 @@ interface ProfessionalTemplateProps {
 }
 
 export default function ProfessionalTemplate({ data, editMode = false, onSave }: ProfessionalTemplateProps) {
+  const { theme, resolvedTheme } = useTheme();
   const contact = data.contact || {}
   
   return (

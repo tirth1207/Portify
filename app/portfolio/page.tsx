@@ -27,6 +27,7 @@ import {
 import ProFeatureGate from "@/components/ProFeatureGate"
 import { canUseProTemplates } from "@/lib/subscription-client"
 import { supabase } from "@/lib/supabase"
+import SimpleTemplate from "@/components/templates/SimpleTemplate"
 
 function PortfolioContent() {
   const [resume, setResume] = useState<any>(null)
@@ -241,6 +242,8 @@ function PortfolioContent() {
     switch (template) {
       case "minimal":
         return <MinimalTemplate {...props} />
+      case "simple":
+        return <SimpleTemplate {...props} />
       case "modern":
         return <ModernTemplate {...props} />
       case "creative":

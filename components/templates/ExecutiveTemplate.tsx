@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import BlurFade from "@/components/magicui/blur-fade"
 import { Award, TrendingUp, Users, Target, Building, Calendar, Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react"
+import { useTheme } from "next-themes"
 
 type Resume = {
   name: string
@@ -44,6 +45,7 @@ interface ExecutiveTemplateProps {
 }
 
 export default function ExecutiveTemplate({ data, editMode = false, onSave }: ExecutiveTemplateProps) {
+  const { theme, resolvedTheme } = useTheme();
   const contact = data.contact || {}
   
   return (

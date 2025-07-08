@@ -24,6 +24,15 @@ const templates = [
     isPro: false,
   },
   {
+    id: "simple",
+    name: "simple",
+    description: "Clean typography and whitespace for timeless elegance",
+    features: ["Clean Typography", "Minimal Design", "Fast Loading"],
+    style: "minimal",
+    accent: "slate",
+    isPro: false,
+  },
+  {
     id: "modern",
     name: "Modern",
     description: "Contemporary gradients with smooth animations",

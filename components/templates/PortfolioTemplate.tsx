@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import BlurFade from "@/components/magicui/blur-fade"
 import { Github, ExternalLink, Mail, Phone, MapPin, Calendar, Award } from "lucide-react"
+import { useTheme } from "next-themes"
 
 type Resume = {
   name: string
@@ -36,6 +37,7 @@ interface PortfolioTemplateProps {
 }
 
 export default function PortfolioTemplate({ data, editMode = false, onSave }: PortfolioTemplateProps) {
+  const { theme, resolvedTheme } = useTheme();
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 py-6 sm:py-12">

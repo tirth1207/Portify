@@ -32,8 +32,10 @@ import {
   FileText
 } from "lucide-react"
 import { PortfolioData, TemplateProps } from "@/lib/types"
+import { useTheme } from "next-themes"
 
 export default function PremiumTemplate({ data, editMode = false, onSave }: TemplateProps) {
+  const { theme, resolvedTheme } = useTheme();
   const [currentSection, setCurrentSection] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
 

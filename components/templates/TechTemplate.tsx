@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import BlurFade from "@/components/magicui/blur-fade"
 import { Code, Terminal, Zap, Github, ExternalLink, Calendar, Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react"
+import { useTheme } from "next-themes"
 
 type Resume = {
   name: string
@@ -42,6 +43,7 @@ interface TechTemplateProps {
 }
 
 export default function TechTemplate({ data, editMode = false, onSave }: TechTemplateProps) {
+  const { theme, resolvedTheme } = useTheme();
   const contact = data.contact || {}
   
   return (

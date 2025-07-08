@@ -7,7 +7,7 @@ import { Mail, Phone, MapPin, Globe, Linkedin, Github, Twitter, ExternalLink, Aw
 import { PortfolioData, TemplateProps } from "@/lib/types"
 import { useTheme } from "next-themes"
 
-export default function MinimalTemplate({ data, editMode = false, onSave }: TemplateProps) {
+export default function SimpleTemplate({ data, editMode = false, onSave }: TemplateProps) {
   const { theme, resolvedTheme } = useTheme();
   const contact = data.contact || {}
   
@@ -26,105 +26,35 @@ export default function MinimalTemplate({ data, editMode = false, onSave }: Temp
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950">
+    <div className="min-h-screen bg-background">
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-8 py-12 sm:py-20">
         {/* Header */}
         <BlurFade delay={0.1}>
-          <div className="text-center mb-16 sm:mb-24 border-b border-gray-100 dark:border-gray-800 pb-12 sm:pb-16">
-            <Avatar className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-6 sm:mb-10 border-2 border-gray-200 dark:border-gray-700 shadow-lg">
-              <AvatarImage src="/placeholder.svg?height=112&width=112" alt={`${data.name} avatar`} />
-              <AvatarFallback className="text-xl sm:text-2xl font-medium bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
+          <div className="flex flex-col items-start justify-center text-left mb-16 sm:mb-24 pb-12 sm:pb-16">
+            <Avatar className="w-24 h-24 sm:w-32 sm:h-32 mb-6 border-2 border-border dark:border-border shadow-lg">
+              <AvatarImage src="/placeholder.svg?height=128&width=128" alt={`${data.name} avatar`} />
+              <AvatarFallback className="text-2xl sm:text-3xl font-medium bg-muted dark:bg-muted text-foreground dark:text-foreground">
                 {getInitials(data.name)}
               </AvatarFallback>
             </Avatar>
-
-            <h1 className="text-3xl sm:text-5xl font-light text-gray-900 dark:text-white mb-3 sm:mb-6 tracking-wide break-words leading-tight">
-              {data.name}
+            <h1 className="text-3xl sm:text-5xl font-bold text-foreground mb-4 leading-tight text-left">
+              Hey, I’m {data.name}.
+              <br />
+              <span className="font-bold">
+                {data.title}
+              </span>
             </h1>
-
-            <h2 className="text-base sm:text-xl text-gray-600 dark:text-gray-400 font-light tracking-wide mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
-              {data.title}
-            </h2>
-
-            {/* Contact Information */}
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-8 text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 sm:mb-8">
-              {contact.email && (
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  <a href={`mailto:${contact.email}`} className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200">
-                    {contact.email}
-                  </a>
-                </div>
-              )}
-              {contact.phone && (
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  <a href={`tel:${contact.phone}`} className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200">
-                    {contact.phone}
-                  </a>
-                </div>
-              )}
-              {contact.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  <span>{contact.location}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Social Links */}
-            {(contact.website || contact.linkedin || contact.github || contact.twitter) && (
-              <div className="flex justify-center items-center gap-4 sm:gap-6 mt-6 sm:mt-8">
-                {contact.website && (
-                  <a
-                    href={contact.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
-                    aria-label="Personal website"
-                  >
-                    <Globe className="h-4 w-4" />
-                  </a>
-                )}
-                {contact.linkedin && (
-                  <a
-                    href={contact.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
-                    aria-label="LinkedIn profile"
-                  >
-                    <Linkedin className="h-4 w-4" />
-                  </a>
-                )}
-                {contact.github && (
-                  <a
-                    href={contact.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
-                    aria-label="GitHub profile"
-                  >
-                    <Github className="h-4 w-4" />
-                  </a>
-                )}
-                {contact.twitter && (
-                  <a
-                    href={contact.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
-                    aria-label="Twitter profile"
-                  >
-                    <Twitter className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            )}
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mb-6 leading-relaxed text-left">
+              {data.summary}
+            </p>
+            <span className="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-base font-medium mt-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+              Available for new project
+            </span>
           </div>
         </BlurFade>
 
-        {/* About */}
+        {/* About
         <BlurFade delay={0.2}>
           <div className="mb-16 sm:mb-24">
             <h2 className="text-xs sm:text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-6 sm:mb-10 font-medium">
@@ -136,7 +66,7 @@ export default function MinimalTemplate({ data, editMode = false, onSave }: Temp
               </p>
             </div>
           </div>
-        </BlurFade>
+        </BlurFade> */}
 
         {/* Experience */}
         {data.experience && data.experience.length > 0 && (
