@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Crown, Zap, Star, AlertCircle, CheckCircle } from "lucide-react"
+import { Crown, Zap, Star, AlertCircle, CheckCircle } from 'lucide-react'
 import { SUBSCRIPTION_PLANS, SubscriptionPlan } from "@/lib/subscription-client"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
@@ -153,4 +153,4 @@ export default function PlanStatus({ onUpgradeClick }: PlanStatusProps) {
       </CardContent>
     </Card>
   )
-} 
+}

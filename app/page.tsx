@@ -5,6 +5,7 @@ import Link from "next/link"
 import BlurFade from "@/components/magicui/blur-fade"
 import BlurFadeText from "@/components/magicui/blur-fade-text"
 import AuthButton from "@/components/AuthButton"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const BLUR_FADE_DELAY = 0.04
 
@@ -13,40 +14,41 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="font-bold text-xl">Portfolio Builder</div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <ThemeToggle />
             <Link href="/login">
-              <Button >Sign In</Button>
+              <Button className="hidden sm:flex">Sign In</Button>
+              <Button size="sm" className="sm:hidden">Sign In</Button>
             </Link>
-            {/* <AuthButton /> */}
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-6 py-24 sm:py-32 pt-32">
+      <section className="relative overflow-hidden px-4 sm:px-6 py-24 sm:py-32 pt-32">
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto max-w-2xl text-center">
             <BlurFadeText
               delay={BLUR_FADE_DELAY}
-              className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl"
+              className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-white"
               text="Build Your Perfect Portfolio in Minutes"
             />
             <BlurFade delay={BLUR_FADE_DELAY * 2}>
-              <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
+              <p className="mt-6 text-base sm:text-lg leading-8 text-gray-600 dark:text-gray-300">
                 Transform your resume into a stunning portfolio website with AI. Upload your PDF, choose a template, and
                 launch your professional presence.
               </p>
             </BlurFade>
             <BlurFade delay={BLUR_FADE_DELAY * 3}>
-              <div className="mt-10 flex items-center justify-center gap-x-6">
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
                 <Link href="/login">
-                  <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3 text-lg">
+                  <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-6 sm:px-8 py-3 text-base sm:text-lg w-full sm:w-auto">
                     Get Started <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Button variant="outline" size="lg" className="px-8 py-3 text-lg bg-transparent">
+                <Button variant="outline" size="lg" className="px-6 sm:px-8 py-3 text-base sm:text-lg bg-transparent w-full sm:w-auto">
                   View Examples
                 </Button>
               </div>
@@ -63,21 +65,21 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <BlurFade delay={BLUR_FADE_DELAY * 4}>
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
                 How It Works
               </h2>
-              <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
+              <p className="mt-4 text-base sm:text-lg text-gray-600 dark:text-gray-300">
                 Four simple steps to your professional portfolio
               </p>
             </div>
           </BlurFade>
 
-          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-4">
+          <div className="mx-auto mt-12 sm:mt-16 md:mt-20 max-w-2xl lg:max-w-none">
+            <dl className="grid grid-cols-1 gap-y-10 sm:gap-y-12 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-0">
               {[
                 {
                   icon: Users,
@@ -106,11 +108,11 @@ export default function Home() {
               ].map((step, index) => (
                 <BlurFade key={step.title} delay={step.delay}>
                   <div className="flex flex-col items-center text-center">
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white">
-                      <step.icon className="h-8 w-8" />
+                    <div className="mb-4 sm:mb-6 flex h-12 sm:h-16 w-12 sm:w-16 items-center justify-center rounded-full bg-black text-white">
+                      <step.icon className="h-6 sm:h-8 w-6 sm:w-8" />
                     </div>
-                    <dt className="text-xl font-semibold leading-7 text-gray-900 dark:text-white">{step.title}</dt>
-                    <dd className="mt-2 text-base leading-7 text-gray-600 dark:text-gray-300">{step.description}</dd>
+                    <dt className="text-lg sm:text-xl font-semibold leading-7 text-gray-900 dark:text-white">{step.title}</dt>
+                    <dd className="mt-2 text-sm sm:text-base leading-7 text-gray-600 dark:text-gray-300">{step.description}</dd>
                   </div>
                 </BlurFade>
               ))}
@@ -120,18 +122,18 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="bg-gray-50 dark:bg-slate-800/50 py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="bg-gray-50 dark:bg-slate-800/50 py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <BlurFade delay={BLUR_FADE_DELAY * 9}>
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
                 Why Choose Our Portfolio Builder?
               </h2>
             </div>
           </BlurFade>
 
-          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="mx-auto mt-12 sm:mt-16 md:mt-20 max-w-2xl lg:max-w-none">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {[
                 {
                   icon: Sparkles,
@@ -154,10 +156,10 @@ export default function Home() {
               ].map((feature) => (
                 <BlurFade key={feature.title} delay={feature.delay}>
                   <Card className="h-full">
-                    <CardContent className="p-6">
-                      <feature.icon className="h-12 w-12 text-black dark:text-white mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
+                    <CardContent className="p-4 sm:p-6">
+                      <feature.icon className="h-10 sm:h-12 w-10 sm:w-12 text-black dark:text-white mb-4" />
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">{feature.title}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </BlurFade>
@@ -168,19 +170,19 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <BlurFade delay={BLUR_FADE_DELAY * 13}>
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
                 Ready to Build Your Portfolio?
               </h2>
-              <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
+              <p className="mt-6 text-base sm:text-lg leading-8 text-gray-600 dark:text-gray-300">
                 Join thousands of professionals who've created stunning portfolios with our platform.
               </p>
-              <div className="mt-10 flex items-center justify-center gap-x-6">
+              <div className="mt-10 flex justify-center">
                 <Link href="/login">
-                  <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-3 text-lg">
+                  <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-6 sm:px-8 py-3 text-base sm:text-lg">
                     Start Building Now <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>

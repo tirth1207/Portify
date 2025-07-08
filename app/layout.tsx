@@ -3,9 +3,10 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import type { Metadata } from "next"
-import { Mona_Sans as FontSans } from "next/font/google"
+import { Mona_Sans as FontSans } from 'next/font/google'
 import "./globals.css"
 import { Analytics } from "@vercel/analytics/next"
+import { Suspense } from "react"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -76,12 +77,15 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="canonical" href="https://portify.co.in" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body className={cn("w-full min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
-        <ThemeProvider attribute="class" defaultTheme="light">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <TooltipProvider delayDuration={0}>
-            {children}
-            <Analytics />
+            <Suspense fallback={null}>
+              {children}
+              <Analytics />
+            </Suspense>
           </TooltipProvider>
         </ThemeProvider>
       </body>

@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Plus, X, ArrowLeft, ArrowRight, User, Briefcase, GraduationCap, Award, Globe, Mail, Phone, MapPin } from "lucide-react"
+import { Plus, X, ArrowLeft, ArrowRight, User, Briefcase, GraduationCap, Award, Globe, Mail } from "lucide-react"
 import BlurFade from "@/components/magicui/blur-fade"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
+import Navigation from "@/components/Navigation"
+import React from "react"
 
 interface UserData {
   name: string
@@ -124,6 +126,7 @@ export default function UserDetailsPage() {
     patents: [],
   })
 
+  // Form state for adding new items
   const [newSkill, setNewSkill] = useState("")
   const [newInterest, setNewInterest] = useState("")
   const [newLanguage, setNewLanguage] = useState({ language: "", proficiency: "" })
@@ -157,6 +160,13 @@ export default function UserDetailsPage() {
     github: "",
     technologies: [],
   })
+  const [newVolunteer, setNewVolunteer] = useState({
+    role: "",
+    organization: "",
+    description: "",
+    startDate: "",
+    endDate: "",
+  })
 
   const router = useRouter()
   const { toast } = useToast()
@@ -175,103 +185,116 @@ export default function UserDetailsPage() {
     if (existingData) {
       try {
         const parsed = JSON.parse(existingData)
-        setUserData(prev => ({ ...prev, ...parsed }))
+        setUserData((prev) => ({ ...prev, ...parsed }))
       } catch (error) {
         console.error("Error parsing existing data:", error)
       }
     }
+
+    // Load current step from localStorage
+    const savedStep = localStorage.getItem("currentStep")
+    if (savedStep) {
+      setCurrentStep(Number.parseInt(savedStep))
+    }
   }, [router])
 
+  // Save progress to localStorage whenever userData changes
+  useEffect(() => {
+    localStorage.setItem("parsedResume", JSON.stringify(userData))
+    localStorage.setItem("currentStep", currentStep.toString())
+  }, [userData, currentStep])
+
+  // Helper functions for managing arrays
   const addSkill = () => {
     if (newSkill.trim() && !userData.skills.includes(newSkill.trim())) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        skills: [...prev.skills, newSkill.trim()]
+        skills: [...prev.skills, newSkill.trim()],
       }))
       setNewSkill("")
     }
   }
 
   const removeSkill = (skill: string) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      skills: prev.skills.filter(s => s !== skill)
+      skills: prev.skills.filter((s) => s !== skill),
     }))
   }
 
   const addInterest = () => {
     if (newInterest.trim() && !userData.interests.includes(newInterest.trim())) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        interests: [...prev.interests, newInterest.trim()]
+        interests: [...prev.interests, newInterest.trim()],
       }))
       setNewInterest("")
     }
   }
 
   const removeInterest = (interest: string) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      interests: prev.interests.filter(i => i !== interest)
+      interests: prev.interests.filter((i) => i !== interest),
     }))
   }
 
   const addLanguage = () => {
     if (newLanguage.language.trim() && newLanguage.proficiency.trim()) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        languages: [...prev.languages, { ...newLanguage }]
+        languages: [...prev.languages, { ...newLanguage }],
       }))
       setNewLanguage({ language: "", proficiency: "" })
     }
   }
 
   const removeLanguage = (index: number) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      languages: prev.languages.filter((_, i) => i !== index)
+      languages: prev.languages.filter((_, i) => i !== index),
     }))
   }
 
   const addCertification = () => {
     if (newCertification.name.trim() && newCertification.issuer.trim()) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        certifications: [...prev.certifications, { ...newCertification }]
+        certifications: [...prev.certifications, { ...newCertification }],
       }))
       setNewCertification({ name: "", issuer: "", date: "" })
     }
   }
 
   const removeCertification = (index: number) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      certifications: prev.certifications.filter((_, i) => i !== index)
+      certifications: prev.certifications.filter((_, i) => i !== index),
     }))
   }
 
   const addAward = () => {
     if (newAward.title.trim() && newAward.issuer.trim()) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        awards: [...prev.awards, { ...newAward }]
+        awards: [...prev.awards, { ...newAward }],
       }))
       setNewAward({ title: "", issuer: "", date: "", description: "" })
     }
   }
 
   const removeAward = (index: number) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      awards: prev.awards.filter((_, i) => i !== index)
+      awards: prev.awards.filter((_, i) => i !== index),
     }))
   }
 
   const addExperience = () => {
     if (newExperience.title.trim() && newExperience.company.trim()) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        experience: [...prev.experience, { ...newExperience }]
+        experience: [...prev.experience, { ...newExperience }],
       }))
       setNewExperience({
         title: "",
@@ -287,17 +310,17 @@ export default function UserDetailsPage() {
   }
 
   const removeExperience = (index: number) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      experience: prev.experience.filter((_, i) => i !== index)
+      experience: prev.experience.filter((_, i) => i !== index),
     }))
   }
 
   const addEducation = () => {
     if (newEducation.degree.trim() && newEducation.institution.trim()) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        education: [...prev.education, { ...newEducation }]
+        education: [...prev.education, { ...newEducation }],
       }))
       setNewEducation({
         degree: "",
@@ -314,17 +337,17 @@ export default function UserDetailsPage() {
   }
 
   const removeEducation = (index: number) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      education: prev.education.filter((_, i) => i !== index)
+      education: prev.education.filter((_, i) => i !== index),
     }))
   }
 
   const addProject = () => {
     if (newProject.name.trim() && newProject.description.trim()) {
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        projects: [...prev.projects, { ...newProject }]
+        projects: [...prev.projects, { ...newProject }],
       }))
       setNewProject({
         name: "",
@@ -337,79 +360,57 @@ export default function UserDetailsPage() {
   }
 
   const removeProject = (index: number) => {
-    setUserData(prev => ({
+    setUserData((prev) => ({
       ...prev,
-      projects: prev.projects.filter((_, i) => i !== index)
+      projects: prev.projects.filter((_, i) => i !== index),
+    }))
+  }
+
+  const addVolunteer = () => {
+    if (newVolunteer.role.trim() && newVolunteer.organization.trim()) {
+      setUserData((prev) => ({
+        ...prev,
+        volunteer: [...prev.volunteer, { ...newVolunteer }],
+      }))
+      setNewVolunteer({
+        role: "",
+        organization: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+      })
+    }
+  }
+
+  const removeVolunteer = (index: number) => {
+    setUserData((prev) => ({
+      ...prev,
+      volunteer: prev.volunteer.filter((_, i) => i !== index),
     }))
   }
 
   const handleSubmit = async () => {
     if (!user) return
-
     setLoading(true)
+
     try {
-      // Save to Supabase - now with all the fields
-      const portfolioData = {
-        user_id: user.id,
-        name: userData.name || "Untitled Portfolio",
-        title: userData.title || "",
-        summary: userData.summary || "",
-        contact: userData.contact,
-        skills: userData.skills,
-        projects: userData.projects,
-        education: userData.education,
-        experience: userData.experience,
-        certifications: userData.certifications,
-        awards: userData.awards,
-        languages: userData.languages,
-        interests: userData.interests,
-        volunteer: userData.volunteer,
-        publications: userData.publications,
-        patents: userData.patents,
-        template: "minimal",
-      }
-
-      console.log("Attempting to save portfolio data:", portfolioData)
-
-      const { data, error } = await supabase
-        .from("portfolios")
-        .insert(portfolioData)
-        .select()
-
-      if (error) {
-        console.error("Supabase error details:", {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        })
-        
-        toast({
-          title: "Error saving to database",
-          description: error.message || "Please check the console for details and try again.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      console.log("Successfully saved to database:", data)
-
       // Save complete data to localStorage for template selection
       localStorage.setItem("parsedResume", JSON.stringify(userData))
-      
+      localStorage.removeItem("currentStep") // Clear step progress
+
       toast({
-        title: "Information saved!",
-        description: "Your details have been saved successfully to the database.",
+        title: "Information saved! 🎉",
+        description: "Your details have been saved successfully. Choose a template next!",
       })
 
-      // Redirect to onboarding for template selection
+      // Redirect to template selection
       router.push("/onboarding")
     } catch (error) {
       console.error("Error saving user data:", error)
-      
+
       toast({
         title: "Error saving information",
-        description: "Please try again. Check the console for details.",
+        description: "Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -418,13 +419,13 @@ export default function UserDetailsPage() {
   }
 
   const steps = [
-    { id: 1, title: "Basic Information", icon: User },
-    { id: 2, title: "Contact Details", icon: Mail },
-    { id: 3, title: "Skills & Interests", icon: Award },
-    { id: 4, title: "Work Experience", icon: Briefcase, optional: true },
+    { id: 1, title: "Basic Info", icon: User },
+    { id: 2, title: "Contact", icon: Mail },
+    { id: 3, title: "Skills", icon: Award },
+    { id: 4, title: "Experience", icon: Briefcase, optional: true },
     { id: 5, title: "Education", icon: GraduationCap, optional: true },
     { id: 6, title: "Projects", icon: Globe, optional: true },
-    { id: 7, title: "Additional Info", icon: Award, optional: true },
+    { id: 7, title: "Additional", icon: Award, optional: true },
   ]
 
   const renderStep = () => {
@@ -439,15 +440,16 @@ export default function UserDetailsPage() {
                   Basic Information
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-3 sm:p-4 lg:p-6">
                 <div>
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
                     id="name"
                     value={userData.name || ""}
-                    onChange={(e) => setUserData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => setUserData((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="John Doe"
                     required
+                    className="mt-1"
                   />
                 </div>
                 <div>
@@ -455,8 +457,9 @@ export default function UserDetailsPage() {
                   <Input
                     id="title"
                     value={userData.title || ""}
-                    onChange={(e) => setUserData(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={(e) => setUserData((prev) => ({ ...prev, title: e.target.value }))}
                     placeholder="Software Engineer, Designer, etc."
+                    className="mt-1"
                   />
                 </div>
                 <div>
@@ -464,9 +467,10 @@ export default function UserDetailsPage() {
                   <Textarea
                     id="summary"
                     value={userData.summary || ""}
-                    onChange={(e) => setUserData(prev => ({ ...prev, summary: e.target.value }))}
+                    onChange={(e) => setUserData((prev) => ({ ...prev, summary: e.target.value }))}
                     placeholder="A brief overview of your professional background, skills, and career objectives..."
                     rows={4}
+                    className="mt-1"
                   />
                 </div>
               </CardContent>
@@ -484,70 +488,91 @@ export default function UserDetailsPage() {
                   Contact Information
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={userData.contact.email || ""}
-                    onChange={(e) => setUserData(prev => ({ 
-                      ...prev, 
-                      contact: { ...prev.contact, email: e.target.value }
-                    }))}
-                    placeholder="john@example.com"
-                  />
+              <CardContent className="space-y-4 p-3 sm:p-4 lg:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={userData.contact.email || ""}
+                      onChange={(e) =>
+                        setUserData((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, email: e.target.value },
+                        }))
+                      }
+                      placeholder="john@example.com"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={userData.contact.phone || ""}
+                      onChange={(e) =>
+                        setUserData((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, phone: e.target.value },
+                        }))
+                      }
+                      placeholder="+1 (555) 123-4567"
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={userData.contact.phone || ""}
-                    onChange={(e) => setUserData(prev => ({ 
-                      ...prev, 
-                      contact: { ...prev.contact, phone: e.target.value }
-                    }))}
-                    placeholder="+1 (555) 123-4567"
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      value={userData.contact.location || ""}
+                      onChange={(e) =>
+                        setUserData((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, location: e.target.value },
+                        }))
+                      }
+                      placeholder="San Francisco, CA"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="website">Personal Website</Label>
+                    <Input
+                      id="website"
+                      type="url"
+                      value={userData.contact.website || ""}
+                      onChange={(e) =>
+                        setUserData((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, website: e.target.value },
+                        }))
+                      }
+                      placeholder="https://johndoe.com"
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={userData.contact.location || ""}
-                    onChange={(e) => setUserData(prev => ({ 
-                      ...prev, 
-                      contact: { ...prev.contact, location: e.target.value }
-                    }))}
-                    placeholder="San Francisco, CA"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="website">Personal Website</Label>
-                  <Input
-                    id="website"
-                    type="url"
-                    value={userData.contact.website || ""}
-                    onChange={(e) => setUserData(prev => ({ 
-                      ...prev, 
-                      contact: { ...prev.contact, website: e.target.value }
-                    }))}
-                    placeholder="https://johndoe.com"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <div>
                     <Label htmlFor="linkedin">LinkedIn</Label>
                     <Input
                       id="linkedin"
                       type="url"
                       value={userData.contact.linkedin || ""}
-                      onChange={(e) => setUserData(prev => ({ 
-                        ...prev, 
-                        contact: { ...prev.contact, linkedin: e.target.value }
-                      }))}
+                      onChange={(e) =>
+                        setUserData((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, linkedin: e.target.value },
+                        }))
+                      }
                       placeholder="LinkedIn URL"
+                      className="mt-1"
                     />
                   </div>
                   <div>
@@ -556,11 +581,14 @@ export default function UserDetailsPage() {
                       id="github"
                       type="url"
                       value={userData.contact.github || ""}
-                      onChange={(e) => setUserData(prev => ({ 
-                        ...prev, 
-                        contact: { ...prev.contact, github: e.target.value }
-                      }))}
+                      onChange={(e) =>
+                        setUserData((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, github: e.target.value },
+                        }))
+                      }
                       placeholder="GitHub URL"
+                      className="mt-1"
                     />
                   </div>
                   <div>
@@ -569,11 +597,14 @@ export default function UserDetailsPage() {
                       id="twitter"
                       type="url"
                       value={userData.contact.twitter || ""}
-                      onChange={(e) => setUserData(prev => ({ 
-                        ...prev, 
-                        contact: { ...prev.contact, twitter: e.target.value }
-                      }))}
+                      onChange={(e) =>
+                        setUserData((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, twitter: e.target.value },
+                        }))
+                      }
                       placeholder="Twitter URL"
+                      className="mt-1"
                     />
                   </div>
                 </div>
@@ -592,7 +623,7 @@ export default function UserDetailsPage() {
                   Skills & Interests
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-3 sm:p-4 lg:p-6">
                 <div>
                   <Label>Skills</Label>
                   <div className="flex gap-2 mt-2">
@@ -600,13 +631,14 @@ export default function UserDetailsPage() {
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
                       placeholder="Add a skill"
-                      onKeyPress={(e) => e.key === "Enter" && addSkill()}
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
+                      className="flex-1"
                     />
-                    <Button onClick={addSkill} size="sm">
+                    <Button onClick={addSkill} size="sm" type="button">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
                     {userData.skills.map((skill, index) => (
                       <Badge key={index} variant="secondary" className="flex items-center gap-1">
                         {skill}
@@ -618,18 +650,18 @@ export default function UserDetailsPage() {
 
                 <div>
                   <Label>Languages</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-2">
                     <Input
                       value={newLanguage.language}
-                      onChange={(e) => setNewLanguage(prev => ({ ...prev, language: e.target.value }))}
+                      onChange={(e) => setNewLanguage((prev) => ({ ...prev, language: e.target.value }))}
                       placeholder="Language"
                     />
                     <Input
                       value={newLanguage.proficiency}
-                      onChange={(e) => setNewLanguage(prev => ({ ...prev, proficiency: e.target.value }))}
-                      placeholder="Proficiency (e.g., Native, Fluent, Intermediate)"
+                      onChange={(e) => setNewLanguage((prev) => ({ ...prev, proficiency: e.target.value }))}
+                      placeholder="Proficiency level"
                     />
-                    <Button onClick={addLanguage} size="sm">
+                    <Button onClick={addLanguage} size="sm" type="button" className="w-full sm:w-auto">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -650,13 +682,14 @@ export default function UserDetailsPage() {
                       value={newInterest}
                       onChange={(e) => setNewInterest(e.target.value)}
                       placeholder="Add an interest"
-                      onKeyPress={(e) => e.key === "Enter" && addInterest()}
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addInterest())}
+                      className="flex-1"
                     />
-                    <Button onClick={addInterest} size="sm">
+                    <Button onClick={addInterest} size="sm" type="button">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
                     {userData.interests.map((interest, index) => (
                       <Badge key={index} variant="secondary" className="flex items-center gap-1">
                         {interest}
@@ -680,33 +713,37 @@ export default function UserDetailsPage() {
                   Work Experience (Optional)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-3 sm:p-4 lg:p-6">
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label>Job Title</Label>
                       <Input
                         value={newExperience.title || ""}
-                        onChange={(e) => setNewExperience(prev => ({ ...prev, title: e.target.value }))}
+                        onChange={(e) => setNewExperience((prev) => ({ ...prev, title: e.target.value }))}
                         placeholder="Software Engineer"
+                        className="mt-1"
                       />
                     </div>
                     <div>
                       <Label>Company</Label>
                       <Input
                         value={newExperience.company || ""}
-                        onChange={(e) => setNewExperience(prev => ({ ...prev, company: e.target.value }))}
+                        onChange={(e) => setNewExperience((prev) => ({ ...prev, company: e.target.value }))}
                         placeholder="Tech Corp"
+                        className="mt-1"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div>
                       <Label>Location</Label>
                       <Input
                         value={newExperience.location || ""}
-                        onChange={(e) => setNewExperience(prev => ({ ...prev, location: e.target.value }))}
+                        onChange={(e) => setNewExperience((prev) => ({ ...prev, location: e.target.value }))}
                         placeholder="San Francisco, CA"
+                        className="mt-1"
                       />
                     </div>
                     <div>
@@ -714,7 +751,8 @@ export default function UserDetailsPage() {
                       <Input
                         type="month"
                         value={newExperience.startDate || ""}
-                        onChange={(e) => setNewExperience(prev => ({ ...prev, startDate: e.target.value }))}
+                        onChange={(e) => setNewExperience((prev) => ({ ...prev, startDate: e.target.value }))}
+                        className="mt-1"
                       />
                     </div>
                     <div>
@@ -722,21 +760,25 @@ export default function UserDetailsPage() {
                       <Input
                         type="month"
                         value={newExperience.endDate || ""}
-                        onChange={(e) => setNewExperience(prev => ({ ...prev, endDate: e.target.value }))}
+                        onChange={(e) => setNewExperience((prev) => ({ ...prev, endDate: e.target.value }))}
                         placeholder="Present"
+                        className="mt-1"
                       />
                     </div>
                   </div>
+
                   <div>
                     <Label>Description</Label>
                     <Textarea
                       value={newExperience.description || ""}
-                      onChange={(e) => setNewExperience(prev => ({ ...prev, description: e.target.value }))}
+                      onChange={(e) => setNewExperience((prev) => ({ ...prev, description: e.target.value }))}
                       placeholder="Brief description of your role and responsibilities..."
                       rows={3}
+                      className="mt-1"
                     />
                   </div>
-                  <Button onClick={addExperience} className="w-full">
+
+                  <Button onClick={addExperience} className="w-full" type="button">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Experience
                   </Button>
@@ -746,16 +788,14 @@ export default function UserDetailsPage() {
                   {userData.experience.map((exp, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold">{exp.title}</h4>
-                          <p className="text-sm text-gray-600">{exp.company}</p>
-                          <p className="text-xs text-gray-500">{exp.startDate} - {exp.endDate || "Present"}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{exp.company}</p>
+                          <p className="text-xs text-gray-500">
+                            {exp.startDate} - {exp.endDate || "Present"}
+                          </p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeExperience(index)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => removeExperience(index)} type="button">
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -778,41 +818,58 @@ export default function UserDetailsPage() {
                   Education (Optional)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-3 sm:p-4 lg:p-6">
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label>Degree</Label>
                       <Input
                         value={newEducation.degree || ""}
-                        onChange={(e) => setNewEducation(prev => ({ ...prev, degree: e.target.value }))}
+                        onChange={(e) => setNewEducation((prev) => ({ ...prev, degree: e.target.value }))}
                         placeholder="Bachelor of Science"
+                        className="mt-1"
                       />
                     </div>
                     <div>
                       <Label>Field of Study</Label>
                       <Input
                         value={newEducation.field || ""}
-                        onChange={(e) => setNewEducation(prev => ({ ...prev, field: e.target.value }))}
+                        onChange={(e) => setNewEducation((prev) => ({ ...prev, field: e.target.value }))}
                         placeholder="Computer Science"
+                        className="mt-1"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label>Institution</Label>
                       <Input
                         value={newEducation.institution || ""}
-                        onChange={(e) => setNewEducation(prev => ({ ...prev, institution: e.target.value }))}
+                        onChange={(e) => setNewEducation((prev) => ({ ...prev, institution: e.target.value }))}
                         placeholder="University Name"
+                        className="mt-1"
                       />
                     </div>
+                    <div>
+                      <Label>Location</Label>
+                      <Input
+                        value={newEducation.location || ""}
+                        onChange={(e) => setNewEducation((prev) => ({ ...prev, location: e.target.value }))}
+                        placeholder="City, State"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div>
                       <Label>Start Date</Label>
                       <Input
                         type="month"
                         value={newEducation.startDate || ""}
-                        onChange={(e) => setNewEducation(prev => ({ ...prev, startDate: e.target.value }))}
+                        onChange={(e) => setNewEducation((prev) => ({ ...prev, startDate: e.target.value }))}
+                        className="mt-1"
                       />
                     </div>
                     <div>
@@ -820,29 +877,22 @@ export default function UserDetailsPage() {
                       <Input
                         type="month"
                         value={newEducation.endDate || ""}
-                        onChange={(e) => setNewEducation(prev => ({ ...prev, endDate: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Location</Label>
-                      <Input
-                        value={newEducation.location || ""}
-                        onChange={(e) => setNewEducation(prev => ({ ...prev, location: e.target.value }))}
-                        placeholder="City, State"
+                        onChange={(e) => setNewEducation((prev) => ({ ...prev, endDate: e.target.value }))}
+                        className="mt-1"
                       />
                     </div>
                     <div>
-                      <Label>GPA</Label>
+                      <Label>GPA (Optional)</Label>
                       <Input
                         value={newEducation.gpa || ""}
-                        onChange={(e) => setNewEducation(prev => ({ ...prev, gpa: e.target.value }))}
+                        onChange={(e) => setNewEducation((prev) => ({ ...prev, gpa: e.target.value }))}
                         placeholder="3.8"
+                        className="mt-1"
                       />
                     </div>
                   </div>
-                  <Button onClick={addEducation} className="w-full">
+
+                  <Button onClick={addEducation} className="w-full" type="button">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Education
                   </Button>
@@ -852,17 +902,17 @@ export default function UserDetailsPage() {
                   {userData.education.map((edu, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h4 className="font-semibold">{edu.degree} in {edu.field}</h4>
-                          <p className="text-sm text-gray-600">{edu.institution}</p>
-                          <p className="text-xs text-gray-500">{edu.startDate} - {edu.endDate}</p>
+                        <div className="flex-1">
+                          <h4 className="font-semibold">
+                            {edu.degree} in {edu.field}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{edu.institution}</p>
+                          <p className="text-xs text-gray-500">
+                            {edu.startDate} - {edu.endDate}
+                          </p>
                           {edu.gpa && <p className="text-xs text-gray-500">GPA: {edu.gpa}</p>}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeEducation(index)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => removeEducation(index)} type="button">
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -884,33 +934,38 @@ export default function UserDetailsPage() {
                   Projects (Optional)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-3 sm:p-4 lg:p-6">
                 <div className="space-y-4">
                   <div>
                     <Label>Project Name</Label>
                     <Input
                       value={newProject.name || ""}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => setNewProject((prev) => ({ ...prev, name: e.target.value }))}
                       placeholder="My Awesome Project"
+                      className="mt-1"
                     />
                   </div>
+
                   <div>
                     <Label>Description</Label>
                     <Textarea
                       value={newProject.description || ""}
-                      onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
+                      onChange={(e) => setNewProject((prev) => ({ ...prev, description: e.target.value }))}
                       placeholder="Describe your project, technologies used, and your role..."
                       rows={3}
+                      className="mt-1"
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label>Live Demo URL</Label>
                       <Input
                         type="url"
                         value={newProject.url || ""}
-                        onChange={(e) => setNewProject(prev => ({ ...prev, url: e.target.value }))}
+                        onChange={(e) => setNewProject((prev) => ({ ...prev, url: e.target.value }))}
                         placeholder="https://project-demo.com"
+                        className="mt-1"
                       />
                     </div>
                     <div>
@@ -918,12 +973,14 @@ export default function UserDetailsPage() {
                       <Input
                         type="url"
                         value={newProject.github || ""}
-                        onChange={(e) => setNewProject(prev => ({ ...prev, github: e.target.value }))}
+                        onChange={(e) => setNewProject((prev) => ({ ...prev, github: e.target.value }))}
                         placeholder="https://github.com/username/project"
+                        className="mt-1"
                       />
                     </div>
                   </div>
-                  <Button onClick={addProject} className="w-full">
+
+                  <Button onClick={addProject} className="w-full" type="button">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Project
                   </Button>
@@ -933,29 +990,35 @@ export default function UserDetailsPage() {
                   {userData.projects.map((project, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold">{project.name}</h4>
-                          <p className="text-sm text-gray-600">{project.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{project.description}</p>
                           {(project.url || project.github) && (
                             <div className="flex gap-2 mt-2">
                               {project.url && (
-                                <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                                <a
+                                  href={project.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
                                   Live Demo
                                 </a>
                               )}
                               {project.github && (
-                                <a href={project.github} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                                <a
+                                  href={project.github}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
                                   GitHub
                                 </a>
                               )}
                             </div>
                           )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeProject(index)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => removeProject(index)} type="button">
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -977,27 +1040,28 @@ export default function UserDetailsPage() {
                   Additional Information (Optional)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-3 sm:p-4 lg:p-6">
                 <div>
                   <Label>Certifications</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-2">
                     <Input
                       value={newCertification.name || ""}
-                      onChange={(e) => setNewCertification(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) => setNewCertification((prev) => ({ ...prev, name: e.target.value }))}
                       placeholder="Certification Name"
                     />
                     <Input
                       value={newCertification.issuer || ""}
-                      onChange={(e) => setNewCertification(prev => ({ ...prev, issuer: e.target.value }))}
+                      onChange={(e) => setNewCertification((prev) => ({ ...prev, issuer: e.target.value }))}
                       placeholder="Issuing Organization"
                     />
                     <div className="flex gap-2">
                       <Input
                         type="month"
                         value={newCertification.date || ""}
-                        onChange={(e) => setNewCertification(prev => ({ ...prev, date: e.target.value }))}
+                        onChange={(e) => setNewCertification((prev) => ({ ...prev, date: e.target.value }))}
+                        className="flex-1"
                       />
-                      <Button onClick={addCertification} size="sm">
+                      <Button onClick={addCertification} size="sm" type="button">
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
@@ -1017,28 +1081,28 @@ export default function UserDetailsPage() {
                   <div className="space-y-2 mt-2">
                     <Input
                       value={newAward.title || ""}
-                      onChange={(e) => setNewAward(prev => ({ ...prev, title: e.target.value }))}
+                      onChange={(e) => setNewAward((prev) => ({ ...prev, title: e.target.value }))}
                       placeholder="Award Title"
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <Input
                         value={newAward.issuer || ""}
-                        onChange={(e) => setNewAward(prev => ({ ...prev, issuer: e.target.value }))}
+                        onChange={(e) => setNewAward((prev) => ({ ...prev, issuer: e.target.value }))}
                         placeholder="Issuing Organization"
                       />
                       <Input
                         type="month"
                         value={newAward.date || ""}
-                        onChange={(e) => setNewAward(prev => ({ ...prev, date: e.target.value }))}
+                        onChange={(e) => setNewAward((prev) => ({ ...prev, date: e.target.value }))}
                       />
                     </div>
                     <Textarea
                       value={newAward.description || ""}
-                      onChange={(e) => setNewAward(prev => ({ ...prev, description: e.target.value }))}
+                      onChange={(e) => setNewAward((prev) => ({ ...prev, description: e.target.value }))}
                       placeholder="Description of the award..."
                       rows={2}
                     />
-                    <Button onClick={addAward} size="sm">
+                    <Button onClick={addAward} size="sm" type="button">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Award
                     </Button>
@@ -1047,16 +1111,73 @@ export default function UserDetailsPage() {
                     {userData.awards.map((award, index) => (
                       <div key={index} className="border rounded-lg p-3">
                         <div className="flex justify-between items-start">
-                          <div>
+                          <div className="flex-1">
                             <h5 className="font-medium">{award.title}</h5>
-                            <p className="text-sm text-gray-600">{award.issuer}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{award.issuer}</p>
                             {award.description && <p className="text-xs text-gray-500 mt-1">{award.description}</p>}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeAward(index)}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => removeAward(index)} type="button">
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Volunteer Experience</Label>
+                  <div className="space-y-2 mt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <Input
+                        value={newVolunteer.role || ""}
+                        onChange={(e) => setNewVolunteer((prev) => ({ ...prev, role: e.target.value }))}
+                        placeholder="Volunteer Role"
+                      />
+                      <Input
+                        value={newVolunteer.organization || ""}
+                        onChange={(e) => setNewVolunteer((prev) => ({ ...prev, organization: e.target.value }))}
+                        placeholder="Organization"
+                      />
+                    </div>
+                    <Textarea
+                      value={newVolunteer.description || ""}
+                      onChange={(e) => setNewVolunteer((prev) => ({ ...prev, description: e.target.value }))}
+                      placeholder="Description of your volunteer work..."
+                      rows={2}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <Input
+                        type="month"
+                        value={newVolunteer.startDate || ""}
+                        onChange={(e) => setNewVolunteer((prev) => ({ ...prev, startDate: e.target.value }))}
+                        placeholder="Start Date"
+                      />
+                      <Input
+                        type="month"
+                        value={newVolunteer.endDate || ""}
+                        onChange={(e) => setNewVolunteer((prev) => ({ ...prev, endDate: e.target.value }))}
+                        placeholder="End Date (or Present)"
+                      />
+                    </div>
+                    <Button onClick={addVolunteer} size="sm" type="button">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Volunteer Experience
+                    </Button>
+                  </div>
+                  <div className="space-y-2 mt-4">
+                    {userData.volunteer.map((vol, index) => (
+                      <div key={index} className="border rounded-lg p-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h5 className="font-medium">{vol.role}</h5>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{vol.organization}</p>
+                            <p className="text-xs text-gray-500">
+                              {vol.startDate} - {vol.endDate || "Present"}
+                            </p>
+                            {vol.description && <p className="text-xs text-gray-500 mt-1">{vol.description}</p>}
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => removeVolunteer(index)} type="button">
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
@@ -1076,111 +1197,152 @@ export default function UserDetailsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 p-2 sm:p-4 md:p-6">
-      <div className="w-full max-w-full md:max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <Link href="/upload">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Upload
-            </Button>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Tell Us About Yourself</h1>
-          <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">
-            Fill in your details to create a personalized portfolio. You can skip optional sections if you don't have that information yet.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+      <Navigation />
+      <div className="pt-16 sm:pt-20 p-3 sm:p-6 lg:p-8">
+        <div className="w-full max-w-full sm:max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-4 sm:mb-6 lg:mb-8">
+            <Link href="/upload">
+              <Button variant="ghost" className="mb-3 sm:mb-4 -ml-2 sm:ml-0">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Upload
+              </Button>
+            </Link>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Tell Us About Yourself
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base leading-relaxed">
+              Fill in your details to create a personalized portfolio. You can skip optional sections if you don't have
+              that information yet.
+            </p>
+          </div>
 
-        {/* Progress Steps */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 pb-2">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center min-w-[60px]">
-                <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
-                  currentStep >= step.id 
-                    ? "bg-blue-600 border-blue-600 text-white" 
-                    : "border-gray-300 dark:border-gray-600 text-gray-500"
-                }`}>
-                  <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+          {/* Progress Steps */}
+          <div className="mb-6 sm:mb-8">
+            {/* Mobile Progress - Show only current step */}
+            <div className="block sm:hidden">
+              <div className="flex items-center justify-center mb-4">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white">
+                  {steps[currentStep - 1].icon && React.createElement(steps[currentStep - 1].icon)}
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-1 sm:mx-2 ${
-                    currentStep > step.id ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
-                  }`} />
-                )}
               </div>
-            ))}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{steps[currentStep - 1].title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Step {currentStep} of {steps.length}
+                  {steps[currentStep - 1].optional && " (Optional)"}
+                </p>
+              </div>
+              {/* Mobile progress bar */}
+              <div className="mt-4">
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(currentStep / steps.length) * 100}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Progress</span>
+                  <span>{Math.round((currentStep / steps.length) * 100)}%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Progress - Show all steps */}
+            <div className="hidden sm:block">
+              <div className="flex items-center justify-between overflow-x-auto pb-2">
+                {steps.map((step, index) => (
+                  <div key={step.id} className="flex items-center min-w-0 flex-1">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex-shrink-0 ${
+                        currentStep >= step.id
+                          ? "bg-blue-600 border-blue-600 text-white"
+                          : "border-gray-300 dark:border-gray-600 text-gray-500"
+                      }`}
+                    >
+                      {step.icon && <step.icon className="h-4 w-4 sm:h-5 sm:w-5" />}
+                    </div>
+                    {index < steps.length - 1 && (
+                      <div
+                        className={`flex-1 h-0.5 mx-2 ${
+                          currentStep > step.id ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
+                        }`}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-2 text-xs sm:text-sm">
+                {steps.map((step) => (
+                  <span
+                    key={step.id}
+                    className={`text-center flex-1 ${currentStep >= step.id ? "text-blue-600" : "text-gray-500"}`}
+                  >
+                    <span className="block">{step.title}</span>
+                    {step.optional && <span className="text-gray-400 text-xs">(Optional)</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between mt-2 text-xs sm:text-xs md:text-sm overflow-x-auto">
-            {steps.map((step) => (
-              <span key={step.id} className={`min-w-[60px] ${
-                currentStep >= step.id ? "text-blue-600" : "text-gray-500"
-              }`}>
-                {step.title}
-                {step.optional && <span className="text-gray-400"> (Optional)</span>}
-              </span>
-            ))}
+
+          {/* Step Content */}
+          <div className="mb-6 sm:mb-8 px-1 sm:px-0">{renderStep()}</div>
+
+          {/* Navigation */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between sticky bottom-0 sm:static bg-white dark:bg-slate-900 p-4 sm:p-0 -mx-4 sm:mx-0 border-t sm:border-t-0 border-gray-200 dark:border-gray-700">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+              disabled={currentStep === 1}
+              className="w-full sm:w-auto bg-white dark:bg-slate-900 order-1 sm:order-none"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+
+            {currentStep < steps.length ? (
+              <Button
+                onClick={() => setCurrentStep((prev) => prev + 1)}
+                disabled={currentStep === steps.length}
+                className="w-full sm:w-auto order-2 sm:order-none"
+              >
+                Next
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={loading || !userData.name}
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto order-2 sm:order-none"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Save & Continue
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            )}
           </div>
-        </div>
-
-        {/* Step Content */}
-        <div className="mb-6 sm:mb-8">
-          {renderStep()}
-        </div>
-
-        {/* Navigation */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-            disabled={currentStep === 1}
-            className="w-full sm:w-auto"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
-
-          {currentStep < steps.length ? (
-            <Button
-              onClick={() => setCurrentStep(prev => prev + 1)}
-              disabled={currentStep === steps.length}
-              className="w-full sm:w-auto"
-            >
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={loading || !userData.name}
-              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  Save & Continue
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </>
-              )}
-            </Button>
-          )}
         </div>
       </div>
     </div>
   )
-} 
+}

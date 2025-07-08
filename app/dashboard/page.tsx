@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, ExternalLink, Edit, Trash2, Crown, AlertCircle, Eye, Share, Copy } from "lucide-react"
+import { Plus, ExternalLink, Edit, Trash2, Crown, AlertCircle, Eye, Share, Copy } from 'lucide-react'
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { useMobile } from "@/hooks/use-mobile"
 
 interface Portfolio {
   id: string
@@ -55,6 +56,7 @@ export default function DashboardPage() {
   const [shareUrl, setShareUrl] = useState("")
   const [isGeneratingShare, setIsGeneratingShare] = useState(false)
   const { toast } = useToast()
+  const isMobile = useMobile()
 
   useEffect(() => {
     fetchPortfolios()
@@ -278,7 +280,7 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 py-8 pt-20">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             My Portfolios
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -286,22 +288,22 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
             {/* Create Portfolio Card */}
             <Card className="mb-6 border-dashed border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
-              <CardContent className="p-8 text-center">
+              <CardContent className="p-6 sm:p-8 text-center">
                 <div className="mb-4">
-                  <Plus className="h-12 w-12 text-gray-400 mx-auto" />
+                  <Plus className="h-10 sm:h-12 w-10 sm:w-12 text-gray-400 mx-auto" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   Create New Portfolio
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm sm:text-base">
                   Upload your resume and create a stunning portfolio
                 </p>
-                <Button onClick={handleCreatePortfolio} className="w-full">
+                <Button onClick={handleCreatePortfolio} className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Portfolio
                 </Button>
@@ -311,16 +313,16 @@ export default function DashboardPage() {
             {/* Portfolios List */}
             {portfolios.length === 0 ? (
               <Card>
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-6 sm:p-8 text-center">
                   <div className="mb-4">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto">
                       <Plus className="h-8 w-8 text-gray-400" />
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
                     No portfolios yet
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm sm:text-base">
                     Create your first portfolio to get started
                   </p>
                   <Button onClick={handleCreatePortfolio}>
@@ -330,16 +332,16 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {portfolios.map((portfolio) => (
                   <Card key={portfolio.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-lg text-gray-900 dark:text-white">
+                          <CardTitle className="text-base sm:text-lg text-gray-900 dark:text-white">
                             {portfolio.name}
                           </CardTitle>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                             {portfolio.title}
                           </p>
                         </div>
@@ -349,7 +351,7 @@ export default function DashboardPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center justify-between text-xs sm:text-sm">
                         <span className="text-gray-600 dark:text-gray-400">Status:</span>
                         <div className="flex items-center gap-2">
                           {portfolio.is_deployed ? (
@@ -367,7 +369,7 @@ export default function DashboardPage() {
                       </div>
 
                       {portfolio.deployment_url && (
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center justify-between text-xs sm:text-sm">
                           <span className="text-gray-600 dark:text-gray-400">URL:</span>
                           <a
                             href={portfolio.deployment_url}
@@ -515,4 +517,4 @@ export default function DashboardPage() {
       </Dialog>
     </div>
   )
-} 
+}
